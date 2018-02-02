@@ -1,27 +1,39 @@
 package Toggl::Wrapper;
 
+=pod
+=head1 NAME
+
+  Toggl::Wrapper - Wrapper for the toggl . com task logging API
+=cut
+
 use 5.006;
 use strict;
 use warnings;
 
-=head1 NAME
+use Moose;
+use Moose::Util::TypeConstraints;
+use MooseX::Types::Email qw/EmailAddress/;
+use MooseX::Privacy;
+use namespace::autoclean;
+use LWP::UserAgent;
 
-Toggl::Wrapper - The great new Toggl::Wrapper!
+use constant TOGGL_URL="https://www.toggl.com/api/v8/";
 
 =head1 VERSION
 
-Version 0.01
+  Version 0.01
 
 =cut
 
 our $VERSION = '0.01';
 
+has 'api_token' => ( is => 'ro', isa => 'Str', required => 1 );
+has '_user_email' => ( is => 'ro', isa => EmailAddress, traits => [qw/Private/] );
 
 =head1 SYNOPSIS
 
-Quick summary of what the module does.
-
-Perhaps a little code snippet.
+This module aims to intereact with toggle.com API, it reads and aldo writes
+time entries given by user.
 
     use Toggl::Wrapper;
 
@@ -35,11 +47,27 @@ if you don't export anything, such as for a purely object-oriented module.
 
 =head1 SUBROUTINES/METHODS
 
-=head2 function1
+=head2 BUILD
+
+Before starting wrappering the API, API tocket mut be validated.
 
 =cut
 
-sub function1 {
+sub BUILD {
+    my $self             = shift;
+    make_api_call(
+        {
+           type => 'GET',
+           url => TOGGL_URL . 'me',
+
+        }
+    );
+}
+
+sub make_api_call {
+    my $call = shift;
+    my $wrapper = LWP::UserAgent->new;
+    my $response = 
 }
 
 =head2 function2
@@ -138,4 +166,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =cut
 
-1; # End of Toggl::Wrapper
+__PACKAGE__->meta->make_immutable;
+
+1;    # End of Toggl::Wrapper
