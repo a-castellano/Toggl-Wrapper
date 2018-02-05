@@ -7,7 +7,7 @@ use Toggl::Wrapper;
 
 my $argsize;
 
-$argssize = scalar @ARGV;
+$argsize = scalar @ARGV;
 
 if ( $argsize != 1){
   print STDERR "This script only accepts one arg.\n";
