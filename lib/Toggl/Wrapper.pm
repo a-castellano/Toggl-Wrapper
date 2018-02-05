@@ -12,12 +12,18 @@ use warnings;
 
 use Moose;
 use Moose::Util::TypeConstraints;
+use MooseX::StrictConstructor;
 use MooseX::Types::Email qw/EmailAddress/;
 use MooseX::Privacy;
+use MooseX::SemiAffordanceAccessor;
 use namespace::autoclean;
 use LWP::UserAgent;
+use JSON::Parse ':all';
+use JSON;
+use Data::Dumper;
 
-use constant TOGGL_URL="https://www.toggl.com/api/v8/";
+use constant TOGGL_URL_V8 => "https://www.toggl.com/api/v8/";
+use constant USER_AGENT => "Toggl::Wrapper https://github.com/a-castellano/Toggl-Wrapper";
 
 =head1 VERSION
 
@@ -28,7 +34,7 @@ use constant TOGGL_URL="https://www.toggl.com/api/v8/";
 our $VERSION = '0.01';
 
 has 'api_token' => ( is => 'ro', isa => 'Str', required => 1 );
-has '_user_email' => ( is => 'ro', isa => EmailAddress, traits => [qw/Private/] );
+has 'email' => ( is => 'ro', isa => EmailAddress, traits => [qw/Private/], writer=>'set_email');
 
 =head1 SYNOPSIS
 
@@ -55,19 +61,36 @@ Before starting wrappering the API, API tocket mut be validated.
 
 sub BUILD {
     my $self             = shift;
-    make_api_call(
+    my $data = make_api_call(
         {
            type => 'GET',
-           url => TOGGL_URL . 'me',
-
+           url => TOGGL_URL_V8 . 'me',
+           data => {
+               api_token => $self->api_token,
+           },
         }
     );
+    $self->set_email(email => $data->{email});
+    print $self->email;
 }
 
 sub make_api_call {
     my $call = shift;
-    my $wrapper = LWP::UserAgent->new;
-    my $response = 
+    my $data = $call->{data};
+    my $wrapper = LWP::UserAgent->new( agent => USER_AGENT, cookie_jar => {} );
+    my $request = my $req = HTTP::Request->new(GET => "$call->{url}" );
+    $request->authorization_basic($data->{'api_token'},"api_token");
+    my $response = $wrapper->request($request);
+    if ($response->is_success) {
+        $response =$response->decoded_content;
+        my $json=parse_json($response);
+        #my $wsid = $json->{data}->{default_wid};
+        #my $email = $json->{data}->{email};
+        return $json->{data};
+    }
+    else {
+        die $response->status_line;
+    }
 }
 
 =head2 function2
