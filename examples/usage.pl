@@ -5,8 +5,19 @@ use warnings;
 use lib '../lib';
 use Toggl::Wrapper;
 
+my $argsize;
+
+$argssize = scalar @ARGV;
+
+if ( $argsize != 1){
+  print STDERR "This script only accepts one arg.\n";
+  exit 1;
+}
+
+my $api_token = $ARGV[0];
+
 my $tggl = Toggl::Wrapper->new(
     {
-        api_token => '99ad3f3398351d13f6d1c9657e8413a9',
+        api_token => $api_token,
     }
 );
