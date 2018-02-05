@@ -51,3 +51,9 @@ pod2htm*.tmp
 pm_to_blib
 Toggl-Wrapper-*
 Toggl-Wrapper-*.tar.gz
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+*~
