@@ -8,16 +8,21 @@ use Toggl::Wrapper;
 my $argsize;
 
 $argsize = scalar @ARGV;
+my %data;
 
-if ( $argsize != 1){
-  print STDERR "This script only accepts one arg.\n";
-  exit 1;
+if ( $argsize == 1 ) {
+    $data{api_token} = $ARGV[0];
 }
-
-my $api_token = $ARGV[0];
-
-my $tggl = Toggl::Wrapper->new(
-    {
-        api_token => $api_token,
-    }
-);
+elsif($argsize == 2){
+  $data{email} = $ARGV[0];
+  $data{password} = $ARGV[1];
+}
+elsif ($argsize == 3){
+  $data{api_token} = $ARGV[0];
+  $data{email} = $ARGV[1];
+  $data{password} = $ARGV[2];
+}
+else{
+  die "Bad number of parameters"
+}
+my $tggl = Toggl::Wrapper->new(%data);

@@ -3,7 +3,7 @@ package Toggl::Wrapper;
 =pod
 =head1 NAME
 
-  Toggl::Wrapper - Wrapper for the toggl . com task logging API
+  Toggl::Wrapper - Wrapper for the toggl.com task logging API
 =cut
 
 use 5.006;
@@ -21,9 +21,11 @@ use LWP::UserAgent;
 use JSON::Parse ':all';
 use JSON;
 use Data::Dumper;
+use Carp qw(carp croak);
 
 use constant TOGGL_URL_V8 => "https://www.toggl.com/api/v8/";
-use constant USER_AGENT => "Toggl::Wrapper https://github.com/a-castellano/Toggl-Wrapper";
+use constant USER_AGENT =>
+  "Toggl::Wrapper https://github.com/a-castellano/Toggl-Wrapper";
 
 =head1 VERSION
 
@@ -33,8 +35,27 @@ use constant USER_AGENT => "Toggl::Wrapper https://github.com/a-castellano/Toggl
 
 our $VERSION = '0.01';
 
-has 'api_token' => ( is => 'ro', isa => 'Str', required => 1 );
-has 'email' => ( is => 'ro', isa => EmailAddress, traits => [qw/Private/], writer=>'set_email');
+has 'api_token' => (
+    is     => 'ro',
+    isa    => 'Str',
+    writer => '_set_api_token',
+);
+has 'email' => (
+    is     => 'ro',
+    isa    => EmailAddress,
+    writer => '_set_email',
+);
+has 'password' => (
+    is     => 'ro',
+    isa    => 'Str',
+    writer => '_set_password',
+);
+has 'user_data' => (
+    is => 'ro',
+
+    #isa    => 'Hash',
+    writer => '_set_user_data',
+);
 
 =head1 SYNOPSIS
 
@@ -46,58 +67,88 @@ time entries given by user.
     my $foo = Toggl::Wrapper->new();
     ...
 
-=head1 EXPORT
-
-A list of functions that can be exported.  You can delete this section
-if you don't export anything, such as for a purely object-oriented module.
-
 =head1 SUBROUTINES/METHODS
 
 =head2 BUILD
 
-Before starting wrappering the API, API tocket mut be validated.
-
+This class needs an api token or and user/password to be used. BUILD method
+checks if these parameters exists and makes the first call abotaining
+user's account data.
 =cut
 
 sub BUILD {
-    my $self             = shift;
-    my $data = make_api_call(
-        {
-           type => 'GET',
-           url => TOGGL_URL_V8 . 'me',
-           data => {
-               api_token => $self->api_token,
-           },
+    my $self = shift;
+    my $response_data;
+
+    if ( $self->api_token ) {
+        if ( $self->email || $self->password ) {
+            carp
+"Trying to create a Toggl::Wrapper instance with and api_token and user/password.\nYou can only create an instance with an api key or email/passwrd, not both.\n";
+            exit 1;
         }
-    );
-    $self->set_email(email => $data->{email});
-    print $self->email;
+        else {
+            $response_data = make_api_call(
+                {
+                    type => 'GET',
+                    url  => TOGGL_URL_V8 . 'me',
+                    data => {
+                        api_token => $self->api_token,
+                    },
+                }
+            );
+        }
+    }
+    elsif ( !$self->email || !$self->password ) {
+        carp
+"Trying to create a Toggl::Wrapper with no user or password, pleasy verify your credentials.\nYou can only create an instance with an api key or email/passwrd, not both.\n";
+        exit 1;
+    }
+    else {
+        $response_data = make_api_call(
+            {
+                type => 'GET',
+                url  => TOGGL_URL_V8 . 'me',
+                data => {
+                    email    => $self->email,
+                    password => $self->password,
+                },
+            }
+        );
+    }
+    $self->_set_api_token( $response_data->{'api_token'} );
+    $self->_set_email( $response_data->{'email'} );
+    $self->_set_user_data($response_data);
 }
 
+=head2 make_api_call
+Perform GET/POST calls to Toggl API.
+=cut
+
 sub make_api_call {
-    my $call = shift;
-    my $data = $call->{data};
+    my $call    = shift;
+    my $data    = $call->{data};
     my $wrapper = LWP::UserAgent->new( agent => USER_AGENT, cookie_jar => {} );
-    my $request = my $req = HTTP::Request->new(GET => "$call->{url}" );
-    $request->authorization_basic($data->{'api_token'},"api_token");
+    my $request = my $req =
+      HTTP::Request->new( $call->{type} => "$call->{url}" );
+    if ( $data->{api_token} ) {
+        $request->authorization_basic( $data->{api_token}, "api_token" );
+    }
+    elsif ( $data->{email} && $data->{password} ) {
+        $request->authorization_basic( "$data->{email}", "$data->{password}" );
+    }
     my $response = $wrapper->request($request);
-    if ($response->is_success) {
-        $response =$response->decoded_content;
-        my $json=parse_json($response);
-        #my $wsid = $json->{data}->{default_wid};
-        #my $email = $json->{data}->{email};
+    if ( $response->is_success ) {
+        $response = $response->decoded_content;
+        my $json = parse_json($response);
         return $json->{data};
     }
     else {
-        die $response->status_line;
+        my $r       = HTTP::Response->parse( $response->status_line );
+        my $code    = $r->code;
+        my $message = $r->message;
+        say STDERR "Check your credentaials: APP call returned $code: $message";
+        exit 1;
     }
-}
-
-=head2 function2
-
-=cut
-
-sub function2 {
 }
 
 =head1 AUTHOR
