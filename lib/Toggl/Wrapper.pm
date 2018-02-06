@@ -59,8 +59,8 @@ has 'user_data' => (
 
 =head1 SYNOPSIS
 
-This module aims to intereact with toggle.com API, it reads and aldo writes
-time entries given by user.
+This module aims to intereact with toggle.com API. For the time being, this module allows users to authenticate using user/password pair or an api token instead.
+
 
     use Toggl::Wrapper;
 

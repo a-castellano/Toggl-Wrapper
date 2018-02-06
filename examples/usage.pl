@@ -23,6 +23,6 @@ elsif ($argsize == 3){
   $data{password} = $ARGV[2];
 }
 else{
-  die "Bad number of parameters"
+  die "Wrong number of parameters"
 }
 my $tggl = Toggl::Wrapper->new(%data);
