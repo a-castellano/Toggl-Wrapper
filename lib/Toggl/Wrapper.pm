@@ -14,14 +14,14 @@ use Moose;
 use Moose::Util::TypeConstraints;
 use MooseX::StrictConstructor;
 use MooseX::Types::Email qw/EmailAddress/;
-use MooseX::Privacy;
 use MooseX::SemiAffordanceAccessor;
-use namespace::autoclean;
 use LWP::UserAgent;
+use HTTP::Request;
+use HTTP::Response;
 use JSON::Parse ':all';
 use JSON;
-use Data::Dumper;
 use Carp qw(carp croak);
+use namespace::autoclean;
 
 use constant TOGGL_URL_V8 => "https://www.toggl.com/api/v8/";
 use constant USER_AGENT =>
@@ -87,7 +87,7 @@ sub BUILD {
             exit 1;
         }
         else {
-            $response_data = make_api_call(
+            $response_data = _make_api_call(
                 {
                     type => 'GET',
                     url  => TOGGL_URL_V8 . 'me',
@@ -104,7 +104,7 @@ sub BUILD {
         exit 1;
     }
     else {
-        $response_data = make_api_call(
+        $response_data = _make_api_call(
             {
                 type => 'GET',
                 url  => TOGGL_URL_V8 . 'me',
@@ -120,15 +120,15 @@ sub BUILD {
     $self->_set_user_data($response_data);
 }
 
-=head2 make_api_call
+=head2 _make_api_call
 Perform GET/POST calls to Toggl API.
 =cut
 
-sub make_api_call {
+sub _make_api_call {
     my $call    = shift;
     my $data    = $call->{data};
     my $wrapper = LWP::UserAgent->new( agent => USER_AGENT, cookie_jar => {} );
-    my $request = my $req =
+    my $request =
       HTTP::Request->new( $call->{type} => "$call->{url}" );
     if ( $data->{api_token} ) {
         $request->authorization_basic( $data->{api_token}, "api_token" );
