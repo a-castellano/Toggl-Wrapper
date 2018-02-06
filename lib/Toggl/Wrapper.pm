@@ -83,7 +83,7 @@ sub BUILD {
     if ( $self->api_token ) {
         if ( $self->email || $self->password ) {
             carp
-"Trying to create a Toggl::Wrapper instance with and api_token and user/password.\nYou can only create an instance with an api key or email/passwrd, not both.\n";
+"Trying to create a Toggl::Wrapper instance with and api_token and user/password.\nYou can only create an instance with an api key or email/password, not both.\n";
             exit 1;
         }
         else {
@@ -100,7 +100,7 @@ sub BUILD {
     }
     elsif ( !$self->email || !$self->password ) {
         carp
-"Trying to create a Toggl::Wrapper with no user or password, pleasy verify your credentials.\nYou can only create an instance with an api key or email/passwrd, not both.\n";
+"Trying to create a Toggl::Wrapper with no user or password, please verify your credentials.\nYou can only create an instance with an api key or email/passwrd, not both.\n";
         exit 1;
     }
     else {
