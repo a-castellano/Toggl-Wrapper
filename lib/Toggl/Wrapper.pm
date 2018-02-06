@@ -6,7 +6,6 @@ package Toggl::Wrapper;
   Toggl::Wrapper - Wrapper for the toggl.com task logging API
 =cut
 
-use 5.006;
 use strict;
 use warnings;
 
