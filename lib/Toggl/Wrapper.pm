@@ -22,6 +22,8 @@ use JSON;
 use Carp qw(carp croak);
 use namespace::autoclean;
 
+use Data::Dumper;
+
 use constant TOGGL_URL_V8 => "https://www.toggl.com/api/v8/";
 use constant USER_AGENT =>
   "Toggl::Wrapper https://github.com/a-castellano/Toggl-Wrapper";
