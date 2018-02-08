@@ -100,7 +100,8 @@ sub BUILD {
         }
     }
     elsif ( !$self->email || !$self->password ) {
-        croak "Trying to create a Toggl::Wrapper with no user or password neither api_token. You can only create an instance with an api key or email/passwrd, not both.";
+        carp "Trying to create a Toggl::Wrapper with no user or password neither api_token. You can only create an instance with an api key or email/passwrd, not both.";
+        exit 1;
     }
     else {
         $response_data = _make_api_call(
