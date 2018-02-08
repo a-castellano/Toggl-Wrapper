@@ -25,4 +25,5 @@ elsif ($argsize == 3){
 else{
   die "Wrong number of parameters"
 }
-my $tggl = Toggl::Wrapper->new(%data);
+#my $tggl = Toggl::Wrapper->new(%data);
+my $tggl = Toggl::Wrapper->new();
