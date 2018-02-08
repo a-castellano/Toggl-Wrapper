@@ -6,7 +6,6 @@ package Toggl::Wrapper;
   Toggl::Wrapper - Wrapper for the toggl.com task logging API
 =cut
 
-use 5.006;
 use strict;
 use warnings;
 
@@ -14,14 +13,16 @@ use Moose;
 use Moose::Util::TypeConstraints;
 use MooseX::StrictConstructor;
 use MooseX::Types::Email qw/EmailAddress/;
-use MooseX::Privacy;
 use MooseX::SemiAffordanceAccessor;
-use namespace::autoclean;
 use LWP::UserAgent;
+use HTTP::Request;
+use HTTP::Response;
 use JSON::Parse ':all';
 use JSON;
-use Data::Dumper;
 use Carp qw(carp croak);
+use namespace::autoclean;
+
+use Data::Dumper;
 
 use constant TOGGL_URL_V8 => "https://www.toggl.com/api/v8/";
 use constant USER_AGENT =>
@@ -52,7 +53,6 @@ has 'password' => (
 );
 has 'user_data' => (
     is => 'ro',
-
     #isa    => 'Hash',
     writer => '_set_user_data',
 );
@@ -83,11 +83,11 @@ sub BUILD {
     if ( $self->api_token ) {
         if ( $self->email || $self->password ) {
             carp
-"Trying to create a Toggl::Wrapper instance with and api_token and user/password.\nYou can only create an instance with an api key or email/passwrd, not both.\n";
+"Trying to create a Toggl::Wrapper instance with and api_token and user/password. You can only create an instance with an api key or email/password, not both.\n";
             exit 1;
         }
         else {
-            $response_data = make_api_call(
+            $response_data = _make_api_call(
                 {
                     type => 'GET',
                     url  => TOGGL_URL_V8 . 'me',
@@ -99,12 +99,11 @@ sub BUILD {
         }
     }
     elsif ( !$self->email || !$self->password ) {
-        carp
-"Trying to create a Toggl::Wrapper with no user or password, pleasy verify your credentials.\nYou can only create an instance with an api key or email/passwrd, not both.\n";
+        croak "Trying to create a Toggl::Wrapper with no user or password neither api_token. You can only create an instance with an api key or email/passwrd, not both.";
         exit 1;
     }
     else {
-        $response_data = make_api_call(
+        $response_data = _make_api_call(
             {
                 type => 'GET',
                 url  => TOGGL_URL_V8 . 'me',
@@ -120,15 +119,15 @@ sub BUILD {
     $self->_set_user_data($response_data);
 }
 
-=head2 make_api_call
+=head2 _make_api_call
 Perform GET/POST calls to Toggl API.
 =cut
 
-sub make_api_call {
+sub _make_api_call {
     my $call    = shift;
     my $data    = $call->{data};
     my $wrapper = LWP::UserAgent->new( agent => USER_AGENT, cookie_jar => {} );
-    my $request = my $req =
+    my $request =
       HTTP::Request->new( $call->{type} => "$call->{url}" );
     if ( $data->{api_token} ) {
         $request->authorization_basic( $data->{api_token}, "api_token" );
@@ -146,8 +145,7 @@ sub make_api_call {
         my $r       = HTTP::Response->parse( $response->status_line );
         my $code    = $r->code;
         my $message = $r->message;
-        say STDERR "Check your credentaials: APP call returned $code: $message";
-        exit 1;
+        croak "Check your credentaials: APP call returned $code: $message";
     }
 }
 
