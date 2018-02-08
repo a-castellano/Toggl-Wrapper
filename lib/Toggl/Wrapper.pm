@@ -53,7 +53,6 @@ has 'password' => (
 );
 has 'user_data' => (
     is => 'ro',
-
     #isa    => 'Hash',
     writer => '_set_user_data',
 );
@@ -100,7 +99,7 @@ sub BUILD {
         }
     }
     elsif ( !$self->email || !$self->password ) {
-        carp "Trying to create a Toggl::Wrapper with no user or password neither api_token. You can only create an instance with an api key or email/passwrd, not both.";
+        croak "Trying to create a Toggl::Wrapper with no user or password neither api_token. You can only create an instance with an api key or email/passwrd, not both.";
         exit 1;
     }
     else {
@@ -146,8 +145,7 @@ sub _make_api_call {
         my $r       = HTTP::Response->parse( $response->status_line );
         my $code    = $r->code;
         my $message = $r->message;
-        say STDERR "Check your credentaials: APP call returned $code: $message";
-        exit 1;
+        croak "Check your credentaials: APP call returned $code: $message";
     }
 }
 

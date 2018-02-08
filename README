@@ -1,6 +1,6 @@
 Toggl-Wrapper
 
-This module aims to intereact with toggle.com API. For the time being, this module allows users to authenticate using user/password pair or an api token instead.
+This module aims to intereact with toggl.com API. For the time being, this module allows users to authenticate using user/password pair or an api token instead.
 
 INSTALLATION
 
