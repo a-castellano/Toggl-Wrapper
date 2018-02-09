@@ -57,3 +57,4 @@ Toggl-Wrapper-*.tar.gz
 Session.vim
 .netrwhist
 *~
+mutants/*
