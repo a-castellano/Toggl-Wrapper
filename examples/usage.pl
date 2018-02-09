@@ -12,6 +12,7 @@ my %data;
 
 if ( $argsize == 1 ) {
     $data{api_token} = $ARGV[0];
+    $data{nonsense} = "Hee";
 }
 elsif($argsize == 2){
   $data{email} = $ARGV[0];

@@ -39,22 +39,26 @@ our $VERSION = '0.01';
 has 'api_token' => (
     is     => 'ro',
     isa    => 'Str',
+    required => 0,
     writer => '_set_api_token',
 );
 has 'email' => (
     is     => 'ro',
     isa    => EmailAddress,
+    required => 0,
     writer => '_set_email',
 );
 has 'password' => (
     is     => 'ro',
     isa    => 'Str',
+    required => 0,
     writer => '_set_password',
 );
 has 'user_data' => (
     is => 'ro',
     #isa    => 'Hash',
     writer => '_set_user_data',
+    required => 0,
 );
 
 =head1 SYNOPSIS
