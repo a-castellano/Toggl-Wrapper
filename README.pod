@@ -5,6 +5,9 @@ Toggl-Wrapper
 
 =for html <a href="https://travis-ci.org/a-castellano/Toggl-Wrapper"><img src="https://travis-ci.org/a-castellano/Toggl-Wrapper.svg?branch=master"></a>
 
+=for html <a href="https://codecov.io/gh/a-castellano/Toggl-Wrapper"><img src="https://codecov.io/gh/a-castellano/Toggl-Wrapper/branch/master/graph/badge.svg"></a>
+
+
 =head1 VERSION
 
 version 0.1
