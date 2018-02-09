@@ -1,8 +1,19 @@
+=pod
+
+=head1 NAME
 Toggl-Wrapper
+
+=for html <a href="https://travis-ci.org/a-castellano/Toggl-Wrapper"><img src="https://travis-ci.org/a-castellano/Toggl-Wrapper.svg?branch=master"></a>
+
+=head1 VERSION
+
+version 0.1
+
+=head1 SYNOPSIS
 
 This module aims to intereact with toggl.com API. For the time being, this module allows users to authenticate using user/password pair or an api token instead.
 
-INSTALLATION
+=head1 INSTALLATION
 
 To install this module, run the following commands:
 
@@ -11,7 +22,7 @@ To install this module, run the following commands:
 	make test
 	make install
 
-SUPPORT AND DOCUMENTATION
+=head1 SUPPORT AND DOCUMENTATION
 
 After installing, you can find documentation for this module with the
 perldoc command.
@@ -33,7 +44,7 @@ You can also look for information at:
         http://search.cpan.org/dist/Toggl-Wrapper/
 
 
-LICENSE AND COPYRIGHT
+=head1 LICENSE AND COPYRIGHT
 
 Copyright (C) 2018 Álvaro Castellano Vela
 
@@ -73,3 +84,4 @@ CONTRIBUTOR WILL BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, OR
 CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THE PACKAGE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+=cut
