@@ -4,6 +4,8 @@ perl:
   - "5.22"
   - "5.20"
 
+script: 'perl Makefile.PL ; make ; make test'
+
 after_success:
   - cover -test
   - cover -report codecov
