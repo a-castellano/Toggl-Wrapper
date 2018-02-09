@@ -24,7 +24,7 @@ requires 'MooseX::SemiAffordanceAccessor', 0.10;
 requires 'MooseX::StrictConstructor', 0.21;
 requires 'MooseX::Types', 0.50;
 requires 'MooseX::Types::Email', 0.007;
-requires 'parent';
+requires 'Devel::Cover::Report::Codecov', 0.22;
 
 recommends 'Pod::Usage';
 
