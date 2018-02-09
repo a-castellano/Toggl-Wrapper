@@ -23,6 +23,7 @@ requires 'Moose::Util::TypeConstraints', 2.2009;
 requires 'MooseX::SemiAffordanceAccessor', 0.10;
 requires 'MooseX::StrictConstructor', 0.21;
 requires 'MooseX::Types', 0.50;
+requires 'MooseX::Types::Email', 0.007;
 requires 'parent';
 
 recommends 'Pod::Usage';
