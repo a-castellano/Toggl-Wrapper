@@ -28,7 +28,7 @@ qr/Trying to create a Toggl::Wrapper with no user or password neither api_token.
       "Creating a $class without proper attributes should fail.";
 }
 
-sub wrong_data : Tests(1) {
+sub wrong_data_constructor : Tests(2) {
     my $test  = shift;
     my $class = $test->class_to_test;
 
@@ -38,7 +38,11 @@ sub wrong_data : Tests(1) {
 
     %data = ( api_token => "wr0ngtt0k3n");
     throws_ok {$class->new(%data)}
-    qr/Check your credentaials: APP call returned 403: Forbidden/, "Creating a $class without proper attributes should fail."
+    qr/Check your credentaials: APP call returned 403: Forbidden/, "Creating a $class without proper attributes should fail.";
+
+    %data = ( api_token => "u1tra53cr3tt0k3n");
+    ok  $class->new(%data);
+
 }
 
 
