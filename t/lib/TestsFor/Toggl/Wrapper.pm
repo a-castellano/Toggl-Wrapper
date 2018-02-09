@@ -41,7 +41,8 @@ sub wrong_data_constructor : Tests(2) {
     qr/Check your credentaials: APP call returned 403: Forbidden/, "Creating a $class without proper attributes should fail.";
 
     %data = ( api_token => "u1tra53cr3tt0k3n");
-    ok  $class->new(%data);
+    ok  $class->new(%data),
+    qr/With right token constructor works/;
 
 }
 
