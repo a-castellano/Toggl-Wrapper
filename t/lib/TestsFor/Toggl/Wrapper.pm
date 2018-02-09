@@ -28,7 +28,7 @@ qr/Trying to create a Toggl::Wrapper with no user or password neither api_token.
       "Creating a $class without proper attributes should fail.";
 }
 
-sub wrong_data_constructor : Tests(5) {
+sub wrong_data_constructor : Tests(7) {
     my $test  = shift;
     my $class = $test->class_to_test;
 
@@ -36,30 +36,26 @@ sub wrong_data_constructor : Tests(5) {
 
     my %data;
 
-    $data{api_token} = "wr0ngtt0k3n";
-    throws_ok {$class->new(%data)}
-    qr/Check your credentaials: APP call returned 403: Forbidden/, "Creating a $class without proper attributes should fail.";
-    delete @data{keys %data};
+    throws_ok {$class->new(api_token => "wr0ngtt0k3n")}
+    qr/Check your credentaials: APP call returned 403: Forbidden/, "Creating $class without proper attributes should fail.";
 
-    $data{api_token} = "u1tra53cr3tt0k3n";
-    ok  $class->new(%data),
+    ok  $class->new(api_token => "u1tra53cr3tt0k3n"),
     qr/With right token constructor works/;
-    delete @data{keys %data};
 
     throws_ok {$class->new(api_token => "u1tra53cr3tt0k3n", nonsense => "ThisIsNonSense")}
-    qr/passed to the constructor: nonsense/, "Creating a $class with data containing anything diferent than api_token, password and email should fail.";
-    delete @data{keys %data};
+    qr/passed to the constructor: nonsense/, "Creating $class with data containing anything diferent than api_token, password and email should fail.";
 
-    $data{email} = 'somemail@domain.com' ;
-    throws_ok {$class->new(%data)}
+    throws_ok {$class->new(email => 'somemail@domain.com')}
     qr/$class with no user or password neither api_token. You can only create an instance with an api key or email\/passwrd, not both. at constructor/, "Creating a $class with data containing email without password.";
-    delete @data{keys %data};
 
-    $data{email} = "somemail\@domaincom" ;
-    throws_ok {$class->new(%data)}
-    qr/does not pass the type constraint because: Must be a valid e-mail address at constructor/, "Creating a $class with data containing email without password.";
-    delete @data{keys %data};
+    throws_ok {$class->new(email => 'somemail@domaincom')}
+    qr/does not pass the type constraint because: Must be a valid e-mail address at constructor/, "Creating $class with data containing email without password.";
 
+    throws_ok {$class->new(email => 'somemail@domaincom', api_token => "wr0ngtt0k3n")}
+    qr/does not pass the type constraint because: Must be a valid e-mail address at constructor/, "Creating $class with data containing email without password. It does not matter if there is other valid parameter";
+
+    throws_ok {$class->new(email => 'somemail@domain.com', nonsense => "ThisIsNonSense")}
+    qr/with no user or password neither api_token. You can only create an instance with an api key/, "Creating $class with data containing anything diferent than api_token, password and email should fail. It will fail even there are valid fields.";
 
 }
 
