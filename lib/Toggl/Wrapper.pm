@@ -116,8 +116,8 @@ sub BUILD {
             }
         );
     }
-    $self->_set_api_token( $response_data->{'api_token'} );
-    $self->_set_email( $response_data->{'email'} );
+    $self->_set_api_token( $response_data->{api_token} );
+    $self->_set_email( $response_data->{email} );
     $self->_set_user_data($response_data);
 }
 
