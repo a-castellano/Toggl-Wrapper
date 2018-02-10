@@ -1,7 +1,7 @@
 package Toggl::Wrapper;
 
 =pod
-=encoding utf8
+=encoding UTF-8
 =head1 NAME
 
   Toggl::Wrapper - Wrapper for the toggl.com task logging API
@@ -128,7 +128,7 @@ sub BUILD {
 }
 
 =head2 _make_api_call
-Perform GET/POST calls to Toggl API.
+Perform GET/POST/PUT calls to Toggl API.
 =cut
 
 sub _make_api_call {
@@ -156,6 +156,15 @@ sub _make_api_call {
     }
 }
 
+=head2 Time Entries
+Manage Toggl time entries.
+=cut
+
+sub get_time_entries(){ #Not finished
+    my $self = shift;
+    return 1;
+}
+
 =head1 AUTHOR
 
 Álvaro Castellano Vela, C<< <alvaro.castellano.vela at gmail.com> >>
@@ -165,9 +174,6 @@ sub _make_api_call {
 Please report any bugs or feature requests to C<bug-toggl-wrapper at rt.cpan.org>, or through
 the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Toggl-Wrapper>.  I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
-
-
-
 
 =head1 SUPPORT
 
