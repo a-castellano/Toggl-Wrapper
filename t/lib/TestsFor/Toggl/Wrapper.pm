@@ -11,11 +11,9 @@ use Toggl::Wrapper;
 
 sub class_to_test { 'Toggl::Wrapper' }
 
-
 sub startup : Tests(startup) {
     my $test  = shift;
     my $class = $test->class_to_test;
-
 }
 
 sub constructor : Tests(2) {
@@ -28,21 +26,124 @@ qr/Trying to create a Toggl::Wrapper with no user or password neither api_token.
       "Creating a $class without proper attributes should fail.";
 }
 
-sub wrong_data : Tests(1) {
+sub wrong_data_constructor : Tests(15) {
     my $test  = shift;
     my $class = $test->class_to_test;
 
-    my ($mocked_lwp, $mocked_http_request, $mocked_http_response) = mock();
+    my ( $mocked_lwp, $mocked_http_request, $mocked_http_response ) = mock();
 
-    my %data;
+    throws_ok { $class->new( api_token => "wr0ngtt0k3n" ) }
+    qr/Check your credentaials: APP call returned 403: Forbidden/,
+      "Creating $class without proper attributes should fail.";
 
-    %data = ( api_token => "wr0ngtt0k3n");
-    throws_ok {$class->new(%data)}
-    qr/Check your credentaials: APP call returned 403: Forbidden/, "Creating a $class without proper attributes should fail."
+    ok $class->new( api_token => "u1tra53cr3tt0k3n" ),
+      qr/With right token, constructor works/;
+
+    throws_ok {
+        $class->new(
+            api_token => "u1tra53cr3tt0k3n",
+            nonsense  => "ThisIsNonSense",
+        );
+    }
+    qr/passed to the constructor: nonsense/,
+"Creating $class with data containing anything different than api_token, password and email should fail.";
+
+    throws_ok { $class->new( email => 'somemail@domain.com' ) }
+qr/$class with no user or password neither api_token. You can only create an instance with an api key or email\/passwrd, not both. at constructor/,
+      "Creating a $class with data containing email without password.";
+
+    throws_ok { $class->new( email => 'somemail@domaincom' ) }
+qr/does not pass the type constraint because: Must be a valid e-mail address at constructor/,
+      "Creating $class with data containing email without password.";
+
+    throws_ok {
+        $class->new(
+            email     => 'somemail@domaincom',
+            api_token => "wr0ngtt0k3n",
+        );
+    }
+qr/does not pass the type constraint because: Must be a valid e-mail address at constructor/,
+"Creating $class with data containing email without password. It does not matter if there is other valid parameter";
+
+    throws_ok {
+        $class->new(
+            email    => 'somemail@domain.com',
+            nonsense => "ThisIsNonSense",
+        );
+    }
+qr/with no user or password neither api_token. You can only create an instance with an api key/,
+"Creating $class with data containing anything different than api_token, password and email should fail. It will fail even there are valid fields.";
+
+    throws_ok {
+        $class->new(
+            api_token => 'u1tra53cr3tt0k3n',
+            password  => 'somepassword',
+        );
+    }
+qr/$class instance with and api_token and user\/password. You can only create an instance with an api key or email\/password, not both/,
+"Creating $class with data containing api_token and password, but no email. That should fail.";
+
+    throws_ok {
+        $class->new(
+            api_token => 'u1tra53cr3tt0k3n',
+            email     => 'somemail@domain.com',
+            password  => 'somepassword',
+        );
+    }
+qr/$class instance with and api_token and user\/password. You can only create an instance with an api key or email\/password, not both/,
+"Creating $class with data containing api_token email and password should fail.";
+
+    throws_ok {
+        $class->new(
+            api_token  => 'u1tra53cr3tt0k3n',
+            email      => 'somemail@domain.com',
+            password   => 'somepassword',
+            extrastuff => 'mayhem',
+        );
+    }
+qr/$class instance with and api_token and user\/password. You can only create an instance with an api key or email\/password, not both/,
+"Creating $class with data containing api_token email and password and anithing else should fail.";
+
+    throws_ok {
+        $class->new(
+            email    => 'somemail@domain.com',
+            password => "myU1tra53cr3tPa55wd",
+        );
+    }
+    qr/Check your credentaials: APP call returned 403: Forbidden/,
+      "Creating $class with wrong email should fail.";
+
+    throws_ok {
+        $class->new(
+            email    => 'myemail@domain.com',
+            password => "somepassword",
+        );
+    }
+    qr/Check your credentaials: APP call returned 403: Forbidden/,
+      "Creating $class with wrong password should fail.";
+
+    ok $class->new(
+        email    => 'myemail@domain.com',
+        password => "myU1tra53cr3tPa55wd"
+      ),
+      qr/With right user and pasword, constructor works/;
+
+    throws_ok {
+        $class->new( email => 'myemail@domain.com', );
+    }
+qr/a $class with no user or password neither api_token. You can only create an instance with an api key or email\/passwrd, not both./,
+      "Creating $class with email but without password should fail.";
+
+    throws_ok {
+        $class->new( password => 'somepassword', );
+    }
+qr/a $class with no user or password neither api_token. You can only create an instance with an api key or email\/passwrd, not both./,
+      "Creating $class with password but without email should fail.";
+
 }
 
-
 sub mock {
+
     # mock LWP::UserAgent
 
     my $mocked_lwp = Test::MockModule->new('LWP::UserAgent');
@@ -108,7 +209,7 @@ sub mock {
 
     # end mocking
 
-    return ($mocked_lwp, $mocked_http_request, $mocked_http_response);
+    return ( $mocked_lwp, $mocked_http_request, $mocked_http_response );
 
 }
 

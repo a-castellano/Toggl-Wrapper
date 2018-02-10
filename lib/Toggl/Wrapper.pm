@@ -37,23 +37,25 @@ use constant USER_AGENT =>
 our $VERSION = '0.01';
 
 has 'api_token' => (
-    is     => 'ro',
-    isa    => 'Str',
-    writer => '_set_api_token',
+    is        => 'ro',
+    isa       => 'Str',
+    writer    => '_set_api_token',
+    predicate => 'has_api_token',
 );
 has 'email' => (
-    is     => 'ro',
-    isa    => EmailAddress,
-    writer => '_set_email',
+    is        => 'ro',
+    isa       => EmailAddress,
+    writer    => '_set_email',
+    predicate => 'has_email',
 );
 has 'password' => (
-    is     => 'ro',
-    isa    => 'Str',
-    writer => '_set_password',
+    is        => 'ro',
+    isa       => 'Str',
+    writer    => '_set_password',
+    predicate => 'has_password',
 );
-has 'user_data' => (
-    is => 'ro',
-    #isa    => 'Hash',
+has '_user_data' => (
+    is     => 'ro',
     writer => '_set_user_data',
 );
 
@@ -78,13 +80,13 @@ user's account data.
 
 sub BUILD {
     my $self = shift;
+
     my $response_data;
 
-    if ( $self->api_token ) {
-        if ( $self->email || $self->password ) {
-            carp
+    if ( $self->has_api_token ) {
+        if ( $self->has_email || $self->has_password ) {
+            croak
 "Trying to create a Toggl::Wrapper instance with and api_token and user/password. You can only create an instance with an api key or email/password, not both.\n";
-            exit 1;
         }
         else {
             $response_data = _make_api_call(
@@ -98,24 +100,29 @@ sub BUILD {
             );
         }
     }
-    elsif ( !$self->email || !$self->password ) {
-        croak "Trying to create a Toggl::Wrapper with no user or password neither api_token. You can only create an instance with an api key or email/passwrd, not both.";
-        exit 1;
-    }
     else {
-        $response_data = _make_api_call(
-            {
-                type => 'GET',
-                url  => TOGGL_URL_V8 . 'me',
-                data => {
-                    email    => $self->email,
-                    password => $self->password,
-                },
-            }
-        );
+        #Thre is no api_token, check user and passwod
+        if ( $self->has_email && $self->has_password ) {
+            $response_data = _make_api_call(
+                {
+                    type => 'GET',
+                    url  => TOGGL_URL_V8 . 'me',
+                    data => {
+                        email    => $self->email,
+                        password => $self->password,
+                    },
+                }
+            );
+
+        }
+        else {
+            croak
+"Trying to create a Toggl::Wrapper with no user or password neither api_token. You can only create an instance with an api key or email/passwrd, not both.";
+        }
     }
-    $self->_set_api_token( $response_data->{'api_token'} );
-    $self->_set_email( $response_data->{'email'} );
+
+    $self->_set_api_token( api_token => $response_data->{api_token} );
+    $self->_set_email( $response_data->{email} );
     $self->_set_user_data($response_data);
 }
 
@@ -127,12 +134,11 @@ sub _make_api_call {
     my $call    = shift;
     my $data    = $call->{data};
     my $wrapper = LWP::UserAgent->new( agent => USER_AGENT, cookie_jar => {} );
-    my $request =
-      HTTP::Request->new( $call->{type} => "$call->{url}" );
+    my $request = HTTP::Request->new( $call->{type} => "$call->{url}" );
     if ( $data->{api_token} ) {
         $request->authorization_basic( $data->{api_token}, "api_token" );
     }
-    elsif ( $data->{email} && $data->{password} ) {
+    else {
         $request->authorization_basic( "$data->{email}", "$data->{password}" );
     }
     my $response = $wrapper->request($request);
