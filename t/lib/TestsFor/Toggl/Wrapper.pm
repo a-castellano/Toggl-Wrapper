@@ -26,7 +26,7 @@ qr/Trying to create a Toggl::Wrapper with no user or password neither api_token.
       "Creating a $class without proper attributes should fail.";
 }
 
-sub wrong_data_constructor : Tests(8) {
+sub wrong_data_constructor : Tests(15) {
     my $test  = shift;
     my $class = $test->class_to_test;
 
@@ -37,7 +37,7 @@ sub wrong_data_constructor : Tests(8) {
       "Creating $class without proper attributes should fail.";
 
     ok $class->new( api_token => "u1tra53cr3tt0k3n" ),
-      qr/With right token constructor works/;
+      qr/With right token, constructor works/;
 
     throws_ok {
         $class->new(
@@ -82,6 +82,63 @@ qr/with no user or password neither api_token. You can only create an instance w
     }
 qr/$class instance with and api_token and user\/password. You can only create an instance with an api key or email\/password, not both/,
 "Creating $class with data containing api_token and password, but no email. That should fail.";
+
+    throws_ok {
+        $class->new(
+            api_token => 'u1tra53cr3tt0k3n',
+            email     => 'somemail@domain.com',
+            password  => 'somepassword',
+        );
+    }
+qr/$class instance with and api_token and user\/password. You can only create an instance with an api key or email\/password, not both/,
+"Creating $class with data containing api_token email and password should fail.";
+
+    throws_ok {
+        $class->new(
+            api_token  => 'u1tra53cr3tt0k3n',
+            email      => 'somemail@domain.com',
+            password   => 'somepassword',
+            extrastuff => 'mayhem',
+        );
+    }
+qr/$class instance with and api_token and user\/password. You can only create an instance with an api key or email\/password, not both/,
+"Creating $class with data containing api_token email and password and anithing else should fail.";
+
+    throws_ok {
+        $class->new(
+            email    => 'somemail@domain.com',
+            password => "myU1tra53cr3tPa55wd",
+        );
+    }
+    qr/Check your credentaials: APP call returned 403: Forbidden/,
+      "Creating $class with wrong email should fail.";
+
+    throws_ok {
+        $class->new(
+            email    => 'myemail@domain.com',
+            password => "somepassword",
+        );
+    }
+    qr/Check your credentaials: APP call returned 403: Forbidden/,
+      "Creating $class with wrong password should fail.";
+
+    ok $class->new(
+        email    => 'myemail@domain.com',
+        password => "myU1tra53cr3tPa55wd"
+      ),
+      qr/With right user and pasword, constructor works/;
+
+    throws_ok {
+        $class->new( email => 'myemail@domain.com', );
+    }
+qr/a $class with no user or password neither api_token. You can only create an instance with an api key or email\/passwrd, not both./,
+      "Creating $class with email but without password should fail.";
+
+    throws_ok {
+        $class->new( password => 'somepassword', );
+    }
+qr/a $class with no user or password neither api_token. You can only create an instance with an api key or email\/passwrd, not both./,
+      "Creating $class with password but without email should fail.";
 
 }
 

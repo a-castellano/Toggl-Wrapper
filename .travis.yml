@@ -4,7 +4,7 @@ perl:
   - "5.22"
   - "5.20"
 
-script: 'perl Makefile.PL ; make ; mutator mutate lib/Toggl/Wrapper.pm; make test &&mutator test'
+script: 'perl Makefile.PL ; make ; mutator mutate lib/Toggl/Wrapper.pm; make test && mutator test'
 
 after_success:
   - cover -test

@@ -102,11 +102,7 @@ sub BUILD {
     }
     else {
         #Thre is no api_token, check user and passwod
-        if ( !$self->has_email || !$self->has_password ) {
-            croak
-"Trying to create a Toggl::Wrapper with no user or password neither api_token. You can only create an instance with an api key or email/passwrd, not both.";
-        }
-        else {
+        if ( $self->has_email && $self->has_password ) {
             $response_data = _make_api_call(
                 {
                     type => 'GET',
@@ -117,8 +113,14 @@ sub BUILD {
                     },
                 }
             );
+
+        }
+        else {
+            croak
+"Trying to create a Toggl::Wrapper with no user or password neither api_token. You can only create an instance with an api key or email/passwrd, not both.";
         }
     }
+
     $self->_set_api_token( api_token => $response_data->{api_token} );
     $self->_set_email( $response_data->{email} );
     $self->_set_user_data($response_data);
@@ -136,7 +138,7 @@ sub _make_api_call {
     if ( $data->{api_token} ) {
         $request->authorization_basic( $data->{api_token}, "api_token" );
     }
-    elsif ( $data->{email} && $data->{password} ) {
+    else {
         $request->authorization_basic( "$data->{email}", "$data->{password}" );
     }
     my $response = $wrapper->request($request);
