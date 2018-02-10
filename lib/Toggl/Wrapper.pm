@@ -1,6 +1,7 @@
 package Toggl::Wrapper;
 
 =pod
+=encoding utf8
 =head1 NAME
 
   Toggl::Wrapper - Wrapper for the toggl.com task logging API
