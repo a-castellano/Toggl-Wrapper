@@ -77,7 +77,7 @@ qr/with no user or password neither api_token. You can only create an instance w
     throws_ok {
         $class->new(
             api_token => 'u1tra53cr3tt0k3n',
-            password  => 'somemaildomain.com',
+            password  => 'somepassword',
         );
     }
 qr/$class instance with and api_token and user\/password. You can only create an instance with an api key or email\/password, not both/,
