@@ -62,7 +62,7 @@ has '_id' => (
 has 'description' => (
     is       => 'ro',
     isa      => 'Str',
-    required => 1,
+    required => 0,
 );
 
 has 'wid' => (
@@ -102,9 +102,10 @@ has 'start' => (
 );
 
 has 'stop' => (
-    is       => 'ro',
-    isa      => 'DateTime',
-    required => 0,
+    is        => 'ro',
+    isa       => 'DateTime',
+    required  => 0,
+    predicate => 'has_stop',
 );
 
 has 'duration' => (
@@ -144,6 +145,11 @@ has 'at' => (
 sub BUILD {
     my $self = shift;
 
+    if ( $self->has_stop ) {
+        if ( DateTime->compare( $self->start, $self->stop ) <= 0 ) {
+            croak "Bad dates";
+        }
+    }
 }
 
 =head1 AUTHOR

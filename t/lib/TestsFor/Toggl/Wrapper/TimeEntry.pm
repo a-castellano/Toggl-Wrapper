@@ -9,21 +9,54 @@ use HTTP::Response;
 
 use Toggl::Wrapper::TimeEntry;
 
-sub class_to_test { 'Toggl::Wrapper' }
+sub class_to_test { 'Toggl::Wrapper::TimeEntry' }
 
 sub startup : Tests(startup) {
     my $test  = shift;
     my $class = $test->class_to_test;
 }
 
-sub constructor : Tests(2) {
+sub constructor : Tests(4) {
     my $test  = shift;
     my $class = $test->class_to_test;
 
+    my $start_date = my $dt1 = DateTime->new(
+        year      => '2018',
+        month     => '3',
+        day       => '8',
+        hour      => '12',
+        minute    => '0',
+        time_zone => 'local'
+    );
+
+    my $end_date = DateTime->new(
+        year      => '2018',
+        month     => '3',
+        day       => '8',
+        hour      => '11',
+        minute    => '0',
+        time_zone => 'local'
+    );
+
     can_ok $class, 'new';
+
     throws_ok { $class->new }
-qr/Trying to create a $class with no user or password neither api_token. You can only create an instance with an api key or email\/passwrd, not both./,
-      "Creating a $class without proper attributes should fail.";
+    qr/Attribute \(created_with\) is required at constructor/,
+      "Creating a $class without required attributes should fail.";
+
+    throws_ok {
+        $class->new( created_with => "TestEntry.pm" );
+    }
+    qr/Attribute \(duration\) is required at constructor/,
+      "Creating a $class without 'duration' should fail.";
+
+    ok $class->new(
+        start        => $start_date,
+        duration     => 900,
+        created_with => "TestEntry.pm"
+      ),
+      "Creating a $class without required attributes should fail.";
+
 }
 
 1;
