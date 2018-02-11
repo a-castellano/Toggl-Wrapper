@@ -16,7 +16,7 @@ sub startup : Tests(startup) {
     my $class = $test->class_to_test;
 }
 
-sub constructor : Tests(5) {
+sub constructor : Tests(8) {
     my $test  = shift;
     my $class = $test->class_to_test;
 
@@ -51,7 +51,7 @@ sub constructor : Tests(5) {
       "Creating a $class without 'duration' should fail.";
 
     ok $class->new(
-        start        => $start_date,
+        start_date   => $start_date,
         duration     => 900,
         created_with => "TestEntry.pm"
       ),
@@ -59,7 +59,7 @@ sub constructor : Tests(5) {
 
     throws_ok {
         $class->new(
-            start => DateTime->new(
+            start_date => DateTime->new(
                 year      => '2018',
                 month     => '3',
                 day       => '8',
@@ -67,7 +67,7 @@ sub constructor : Tests(5) {
                 minute    => '0',
                 time_zone => 'local'
             ),
-            stop => DateTime->new(
+            stop_date => DateTime->new(
                 year      => '2018',
                 month     => '3',
                 day       => '8',
@@ -81,6 +81,65 @@ sub constructor : Tests(5) {
     }
     qr/End date has to be greater than start date. at constructor/,
       "Creating a $class without 'duration' should fail.";
+
+    ok $class->new(
+        start_date => DateTime->new(
+            year      => '2018',
+            month     => '3',
+            day       => '8',
+            hour      => '12',
+            minute    => '0',
+            time_zone => 'local'
+        ),
+        stop_date => DateTime->new(
+            year      => '2018',
+            month     => '3',
+            day       => '8',
+            hour      => '12',
+            minute    => '15',
+            time_zone => 'local'
+        ),
+
+        duration     => 900,
+        created_with => "TestEntry.pm"
+      ),
+      "Create a $class object with correct start and stop dates works.";
+
+    throws_ok {
+        $class->new(
+            start_date => DateTime->new(
+                year      => '2018',
+                month     => '3',
+                day       => '8',
+                hour      => '12',
+                minute    => '0',
+                time_zone => 'local'
+            ),
+            stop         => '2018-02-10T18:18:58Z',
+            duration     => 900,
+            created_with => "TestEntry.pm"
+        );
+    }
+    qr/Found unknown attribute\(s\) passed to the constructor: stop/,
+      "stop is a private variable, it cannot be set in constructor method.";
+
+    throws_ok {
+        $class->new(
+            start_date => DateTime->new(
+                year      => '2018',
+                month     => '3',
+                day       => '8',
+                hour      => '12',
+                minute    => '0',
+                time_zone => 'local'
+            ),
+            start        => '2018-02-10T18:18:58Z',
+            duration     => 900,
+            created_with => "TestEntry.pm"
+        );
+    }
+    qr/Found unknown attribute\(s\) passed to the constructor: start/,
+      "start is a private variable, it cannot be set in constructor method.";
 
 }
 

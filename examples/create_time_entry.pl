@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use lib '../lib';
 use Toggl::Wrapper;
+use Toggl::Wrapper::TimeEntry;
 
 my $argsize;
 
@@ -26,9 +27,10 @@ else {
     die "Wrong number of parameters";
 }
 
-my $tggl = Toggl::Wrapper->new(%data);
+#my $tggl = Toggl::Wrapper->new(%data);
 
-$tggl->create_time_entry(
-    duration    => 1000,
-    description => "Run this example."
-);
+#$tggl->create_time_entry(
+#    duration    => 1000,
+#    description => "Run this example."
+#);
+

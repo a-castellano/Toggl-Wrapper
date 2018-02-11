@@ -52,11 +52,10 @@ duronly: should Toggl show the start and stop time of this time entry? (boolean,
 at: timestamp that is sent in the response, indicates the time item was last updatedead1 SUBROUTINES/METHODS
 =cut
 
-has '_id' => (
-    is        => 'ro',
-    isa       => 'Int',
-    writer    => '_set_id',
-    predicate => 'has_id',
+has 'id' => (
+    is     => 'ro',
+    isa    => 'Int',
+    writer => '_set_id',
 );
 
 has 'description' => (
@@ -95,17 +94,33 @@ has 'billable' => (
     required => 0,
 );
 
-has 'start' => (
+has 'start_date' => (
     is       => 'ro',
     isa      => 'DateTime',
     required => 1,
 );
 
-has 'stop' => (
+has 'start' => (
+    is       => 'ro',
+    isa      => 'Str',
+    required => 0,
+    writer   => 'set_start_date_iso8601',
+    init_arg => undef,
+);
+
+has 'stop_date' => (
     is        => 'ro',
     isa       => 'DateTime',
     required  => 0,
-    predicate => 'has_stop',
+    predicate => 'has_stop_date',
+);
+
+has 'stop' => (
+    is       => 'ro',
+    isa      => 'Str',
+    required => 0,
+    writer   => 'set_stop_date_iso8601',
+    init_arg => undef,
 );
 
 has 'duration' => (
@@ -144,11 +159,16 @@ has 'at' => (
 
 sub BUILD {
     my $self = shift;
+    my $timestamp;
 
-    if ( $self->has_stop ) {
-        if ( DateTime->compare( $self->start, $self->stop ) > 0 ) {
+    $timestamp = $self->start_date->iso8601() . 'Z';
+
+    if ( $self->has_stop_date ) {
+        if ( DateTime->compare( $self->start_date, $self->stop_date ) > 0 ) {
             croak "End date has to be greater than start date.";
         }
+        $self->set_stop_date_iso8601(
+            stop => $self->stop_date->iso8601() . 'Z' );
     }
 }
 

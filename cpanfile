@@ -1,5 +1,6 @@
 requires 'CPAN::Meta', 2.12091;
 requires 'CPAN::Meta::Prereqs', 2.12091;
+requires 'DateTime::Format::ISO8601', 0.08;
 requires 'Email::Abstract', 3.008;
 requires 'HTTP::Date', 6.02;
 requires 'HTTP::Headers', 6.13;
