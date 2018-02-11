@@ -16,7 +16,7 @@ sub startup : Tests(startup) {
     my $class = $test->class_to_test;
 }
 
-sub constructor : Tests(4) {
+sub constructor : Tests(5) {
     my $test  = shift;
     my $class = $test->class_to_test;
 
@@ -56,6 +56,31 @@ sub constructor : Tests(4) {
         created_with => "TestEntry.pm"
       ),
       "Creating a $class without required attributes should fail.";
+
+    throws_ok {
+        $class->new(
+            start => DateTime->new(
+                year      => '2018',
+                month     => '3',
+                day       => '8',
+                hour      => '12',
+                minute    => '0',
+                time_zone => 'local'
+            ),
+            stop => DateTime->new(
+                year      => '2018',
+                month     => '3',
+                day       => '8',
+                hour      => '11',
+                minute    => '0',
+                time_zone => 'local'
+            ),
+            duration     => 900,
+            created_with => "TestEntry.pm"
+        );
+    }
+    qr/End date has to be greater than start date. at constructor/,
+      "Creating a $class without 'duration' should fail.";
 
 }
 

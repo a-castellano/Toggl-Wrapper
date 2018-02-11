@@ -146,8 +146,8 @@ sub BUILD {
     my $self = shift;
 
     if ( $self->has_stop ) {
-        if ( DateTime->compare( $self->start, $self->stop ) <= 0 ) {
-            croak "Bad dates";
+        if ( DateTime->compare( $self->start, $self->stop ) > 0 ) {
+            croak "End date has to be greater than start date.";
         }
     }
 }
