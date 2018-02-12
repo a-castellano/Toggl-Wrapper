@@ -26,7 +26,7 @@ qr/Trying to create a Toggl::Wrapper with no user or password neither api_token.
       "Creating a $class without proper attributes should fail.";
 }
 
-sub wrong_data_constructor : Tests(15) {
+sub wrong_or_right_data_constructor : Tests(15) {
     my $test  = shift;
     my $class = $test->class_to_test;
 
@@ -139,6 +139,21 @@ qr/a $class with no user or password neither api_token. You can only create an i
     }
 qr/a $class with no user or password neither api_token. You can only create an instance with an api key or email\/passwrd, not both./,
       "Creating $class with password but without email should fail.";
+
+}
+
+sub get_time_entries : Tests(1) {
+    my $test  = shift;
+    my $class = $test->class_to_test;
+
+    my ( $mocked_lwp, $mocked_http_request, $mocked_http_response ) = mock();
+    $class->new( api_token => "u1tra53cr3tt0k3n" );
+
+    ok $class->get_time_entries(
+        start_date => '2013-03-10T15:42:46+02:00',
+        end_date   => '2013-03-11T15:42:46+02:00',
+      ),
+      qr/Creating a time entry only with description and duration should work./;
 
 }
 
