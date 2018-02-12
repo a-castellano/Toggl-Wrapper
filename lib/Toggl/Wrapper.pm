@@ -20,7 +20,7 @@ use HTTP::Request;
 use HTTP::Response;
 use JSON::Parse ':all';
 use JSON;
-use Carp qw(carp croak);
+use Carp qw(croak);
 use namespace::autoclean;
 
 use Data::Dumper;
@@ -57,6 +57,7 @@ has 'password' => (
 );
 has '_user_data' => (
     is     => 'ro',
+    isa    => 'HashRef',
     writer => '_set_user_data',
 );
 
@@ -160,7 +161,7 @@ sub _make_api_call {
 Manage Toggl time entries.
 =cut
 
-sub get_time_entries(){ #Not finished
+sub get_time_entries() {    #Not finished
     my $self = shift;
     return 1;
 }

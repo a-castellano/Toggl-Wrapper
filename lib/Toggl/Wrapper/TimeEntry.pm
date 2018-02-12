@@ -15,10 +15,9 @@ use Moose::Util::TypeConstraints;
 use MooseX::StrictConstructor;
 use MooseX::SemiAffordanceAccessor;
 use DateTime;
-use Carp qw(carp croak);
+use Carp qw(croak);
+with "Utils::Role::Serializable::JSON";
 use namespace::autoclean;
-
-use Data::Dumper;
 
 =head1 VERSION
 
@@ -38,6 +37,7 @@ This module manages Toggl time entries.
     ...
 
 =head1 Properties
+
 description: (string, strongly suggested to be used)
 wid: workspace ID (integer, required if pid or tid not supplied)
 pid: project ID (integer, not required)
@@ -53,9 +53,16 @@ at: timestamp that is sent in the response, indicates the time item was last upd
 =cut
 
 has 'id' => (
-    is     => 'ro',
-    isa    => 'Int',
-    writer => '_set_id',
+    is       => 'ro',
+    isa      => 'Int',
+    writer   => 'set_id',
+    required => 0,
+);
+
+has 'guid' => (
+    is       => 'ro',
+    isa      => 'Str',
+    required => 0,
 );
 
 has 'description' => (
@@ -85,12 +92,8 @@ has 'tid' => (
 has 'billable' => (
     is       => 'ro',
     isa      => 'Bool',
-    required => 0,
-);
-
-has 'billable' => (
-    is       => 'ro',
-    isa      => 'Bool',
+    traits   => ['Bool'],
+    default  => 0,
     required => 0,
 );
 
@@ -144,6 +147,8 @@ has 'tags' => (
 has 'duronly' => (
     is       => 'ro',
     isa      => 'Bool',
+    traits   => ['Bool'],
+    default  => 0,
     required => 0,
 );
 
@@ -153,7 +158,11 @@ has 'at' => (
     required => 0,
 );
 
+=head1 SUBROUTINES/METHODS
 =head2 BUILD
+
+If stop date is set this method chacks if stop date is older than start data.
+It also converts data to ISO 8601 format.
 
 =cut
 
@@ -161,15 +170,35 @@ sub BUILD {
     my $self = shift;
     my $timestamp;
 
-    $timestamp = $self->start_date->iso8601() . 'Z';
+    $self->set_start_date_iso8601( $self->start_date->iso8601() . 'Z' );
 
     if ( $self->has_stop_date ) {
         if ( DateTime->compare( $self->start_date, $self->stop_date ) > 0 ) {
             croak "End date has to be greater than start date.";
         }
-        $self->set_stop_date_iso8601(
-            stop => $self->stop_date->iso8601() . 'Z' );
+        $self->set_stop_date_iso8601( $self->stop_date->iso8601() . 'Z' );
     }
+}
+
+=head2 serializable_attributes
+
+Returns json serialiable atributes.
+
+=cut
+
+sub serializable_attributes {
+    return
+      qw(id guid description wid pid tid billable start stop duration created_with tags duronly at );
+}
+
+=head2 boolean_atributes
+
+From serializable_attributes, return which are boolean.
+
+=cut
+
+sub boolean_atributes {
+    return qw( billable duronly );
 }
 
 =head1 AUTHOR
