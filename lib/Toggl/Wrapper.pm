@@ -132,11 +132,12 @@ Perform GET/POST/PUT calls to Toggl API.
 =cut
 
 sub _make_api_call {
-    my $call    = shift;
-    my $auth    = $call->{auth};
-    my $headers = $call->{headers};
-    my $data    = $call->{data};
-    my $wrapper = LWP::UserAgent->new(
+    my $call      = shift;
+    my $auth      = $call->{auth};
+    my $headers   = $call->{headers};
+    my $data      = $call->{data};
+    my $json_data = "";
+    my $wrapper   = LWP::UserAgent->new(
         agent      => USER_AGENT,
         cookie_jar => {}
     );
@@ -159,7 +160,12 @@ sub _make_api_call {
 
     # Data
     if (%$data) {
-        die Dumper $data;
+        foreach my $key ( keys %$data ) {
+            $json_data = "$json_data \"$key\":$data->{$key},";
+        }
+        $json_data =~ s/,$//;
+        $json_data = "{$json_data}";
+        $request->content($json_data);
     }
 
     my $response = $wrapper->request($request);
@@ -185,23 +191,19 @@ sub _make_api_call {
 Manage Toggl time entries.
 =cut
 
-=head1 Time Entries
-Manage Toggl time entries.
-=cut
-
 =head1 create_time_entry
 Creates and publishes a new time entry..
 =cut
 
 sub create_time_entry() {
-    my ( $self, $time_entry_data ) = @_;
+    my ( $self, %time_entry_data ) = @_;
 
     # If there is no wid defined, Wrapper will use default one
-    if ( !exists $time_entry_data->{wid} ) {
-        $time_entry_data->{wid} = $self->_user_data->{default_wid};
+    if ( $time_entry_data{wid} ) {
+        $time_entry_data{wid} = $self->_user_data->{default_wid};
     }
 
-    my $time_entry = Toggl::Wrapper::TimeEntry->new($time_entry_data);
+    my $time_entry = Toggl::Wrapper::TimeEntry->new( \%time_entry_data );
 
     my $response_data = _make_api_call(
         {

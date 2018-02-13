@@ -32,22 +32,13 @@ my $tggl = Toggl::Wrapper->new(%data);
 
 $tggl->create_time_entry(
     start_date => DateTime->new(
-        year      => '2018',
-        month     => '3',
-        day       => '12',
-        hour      => '12',
-        minute    => '0',
-        time_zone => 'local'
+        year   => '2018',
+        month  => '2',
+        day    => '13',
+        hour   => '18',
+        minute => '0',
     ),
-    stop_date => DateTime->new(
-        year      => '2018',
-        month     => '3',
-        day       => '12',
-        hour      => '13',
-        minute    => '0',
-        time_zone => 'local'
-    ),
-    duration     => 900,
+    duration     => 1000,
     created_with => "TestEntry.pm",
     wid          => 1364303,
 );
