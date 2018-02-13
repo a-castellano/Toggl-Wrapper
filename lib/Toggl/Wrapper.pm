@@ -99,9 +99,10 @@ sub BUILD {
                 {
                     type => 'GET',
                     url  => TOGGL_URL_V8 . 'me',
-                    data => {
+                    auth => {
                         api_token => $self->api_token,
                     },
+                    data => {},
                 }
             );
         }
@@ -113,10 +114,11 @@ sub BUILD {
                 {
                     type => 'GET',
                     url  => TOGGL_URL_V8 . 'me',
-                    data => {
+                    auth => {
                         email    => $self->email,
                         password => $self->password,
                     },
+                    data => {},
                 }
             );
 
@@ -138,14 +140,15 @@ Perform GET/POST/PUT calls to Toggl API.
 
 sub _make_api_call {
     my $call    = shift;
+    my $auth    = $call->{auth};
     my $data    = $call->{data};
     my $wrapper = LWP::UserAgent->new( agent => USER_AGENT, cookie_jar => {} );
     my $request = HTTP::Request->new( $call->{type} => "$call->{url}" );
-    if ( $data->{api_token} ) {
-        $request->authorization_basic( $data->{api_token}, "api_token" );
+    if ( $auth->{api_token} ) {
+        $request->authorization_basic( $auth->{api_token}, "api_token" );
     }
     else {
-        $request->authorization_basic( "$data->{email}", "$data->{password}" );
+        $request->authorization_basic( "$auth->{email}", "$auth->{password}" );
     }
     my $response = $wrapper->request($request);
     if ( $response->is_success ) {
