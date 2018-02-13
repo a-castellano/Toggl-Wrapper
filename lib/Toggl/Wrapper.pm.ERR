@@ -1,0 +1,5 @@
+
+There is no previous '(' to match a ')' on line 183
+183: %time_entry_data ) = @_;
+                      ^
+297:	To save a full .LOG file rerun with -g

@@ -30,8 +30,8 @@ use Data::Dumper;
 use namespace::autoclean;
 
 use constant TOGGL_URL_V8 => "https://www.toggl.com/api/v8/";
-use constant USER_AGENT =>
-  "Toggl::Wrapper https://github.com/a-castellano/Toggl-Wrapper";
+use constant USER_AGENT   => "Toggl::Wrapper
+https://github.com/a-castellano/Toggl-Wrapper";
 
 =head1 VERSION
 
@@ -67,7 +67,9 @@ has '_user_data' => (
 
 =head1 SYNOPSIS
 
-This module aims to intereact with toggle.com API. For the time being, this module allows users to authenticate using user/password pair or an api token instead.
+This module aims to intereact with toggle.com API. For the time being,
+this module allows users to authenticate using user/password pair or an
+api token instead.
 
 
     use Toggl::Wrapper;
@@ -132,15 +134,34 @@ Perform GET/POST/PUT calls to Toggl API.
 sub _make_api_call {
     my $call    = shift;
     my $auth    = $call->{auth};
+    my $headers = $call->{headers};
     my $data    = $call->{data};
-    my $wrapper = LWP::UserAgent->new( agent => USER_AGENT, cookie_jar => {} );
+    my $wrapper = LWP::UserAgent->new(
+        agent      => USER_AGENT,
+        cookie_jar => {}
+    );
     my $request = HTTP::Request->new( $call->{type} => "$call->{url}" );
+
+    # Auth
     if ( $auth->{api_token} ) {
         $request->authorization_basic( $auth->{api_token}, "api_token" );
     }
     else {
         $request->authorization_basic( "$auth->{email}", "$auth->{password}" );
     }
+
+    # Headers
+    if (@$headers) {
+        foreach my $header (@$headers) {
+            $request->header(%$header);
+        }
+    }
+
+    # Data
+    if (%$data) {
+        die Dumper $data;
+    }
+
     my $response = $wrapper->request($request);
     if ( $response->is_success ) {
         $response = $response->decoded_content;
@@ -155,7 +176,6 @@ sub _make_api_call {
             croak "Check your credentaials: APP call returned $code: $message";
         }
         else {
-
             croak "An error ocurred: APP call returned $code: $message";
         }
     }
@@ -169,17 +189,19 @@ Manage Toggl time entries.
 Manage Toggl time entries.
 =cut
 
-=head12 create_time_entry
+=head1 create_time_entry
 Creates and publishes a new time entry..
 =cut
 
-sub create_time_entry() {    #Not finished
-    my ( $self, %time_entry_data ) = @_;
+sub create_time_entry() {
+    my ( $self, $time_entry_data ) = @_;
 
     # If there is no wid defined, Wrapper will use default one
-    if ( !exists $time_entry_data{wid} ) {
-        $time_entry_data{wid} = $self->_user_data->{default_wid};
+    if ( !exists $time_entry_data->{wid} ) {
+        $time_entry_data->{wid} = $self->_user_data->{default_wid};
     }
+
+    my $time_entry = Toggl::Wrapper::TimeEntry->new($time_entry_data);
 
     my $response_data = _make_api_call(
         {
@@ -189,7 +211,7 @@ sub create_time_entry() {    #Not finished
                 api_token => $self->api_token,
             },
             headers => [ { 'content-type' => 'application/json' } ],
-            data => { time_entry => \%time_entry_data },
+            data => { time_entry => $time_entry->as_json() },
         }
     );
     return 1;
@@ -201,9 +223,11 @@ sub create_time_entry() {    #Not finished
 
 =head1 BUGS
 
-Please report any bugs or feature requests to C<bug-toggl-wrapper at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Toggl-Wrapper>.  I will be notified, and then you'll
-automatically be notified of progress on your bug as I make changes.
+Please report any bugs or feature requests to C<bug-toggl-wrapper at
+rt.cpan.org>, or through the web interface at
+L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Toggl-Wrapper>.  I
+will be notified, and then you'll automatically be notified of progress
+on your bug as I make changes.
 
 =head1 SUPPORT
 
@@ -263,11 +287,12 @@ mark, tradename, or logo of the Copyright Holder.
 This license includes the non-exclusive, worldwide, free-of-charge
 patent license to make, have made, use, offer to sell, sell, import and
 otherwise transfer the Package with respect to any patent claims
-licensable by the Copyright Holder that are necessarily infringed by the
-Package. If you institute patent litigation (including a cross-claim or
-counterclaim) against any party alleging that the Package constitutes
-direct or contributory patent infringement, then this Artistic License
-to you shall terminate on the date that such litigation is filed.
+licensable by the Copyright Holder that are necessarily infringed by
+the Package. If you institute patent litigation (including a
+cross-claim or counterclaim) against any party alleging that the
+Package constitutes direct or contributory patent infringement, then
+this Artistic License to you shall terminate on the date that such
+litigation is filed.
 
 Disclaimer of Warranty: THE PACKAGE IS PROVIDED BY THE COPYRIGHT HOLDER
 AND CONTRIBUTORS "AS IS' AND WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
