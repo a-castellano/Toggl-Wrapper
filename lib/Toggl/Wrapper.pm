@@ -88,6 +88,7 @@ sub BUILD {
     my $self = shift;
 
     my $response_data;
+    my %auth;
 
     if ( $self->has_api_token ) {
         if ( $self->has_email || $self->has_password ) {
@@ -95,41 +96,31 @@ sub BUILD {
 "Trying to create a Toggl::Wrapper instance with and api_token and user/password. You can only create an instance with an api key or email/password, not both.\n";
         }
         else {
-            $response_data = _make_api_call(
-                {
-                    type => 'GET',
-                    url  => TOGGL_URL_V8 . 'me',
-                    auth => {
-                        api_token => $self->api_token,
-                    },
-                    data => {},
-                }
-            );
+            $auth{api_token} = $self->api_token;
         }
     }
     else {
         #Thre is no api_token, check user and passwod
         if ( $self->has_email && $self->has_password ) {
-            $response_data = _make_api_call(
-                {
-                    type => 'GET',
-                    url  => TOGGL_URL_V8 . 'me',
-                    auth => {
-                        email    => $self->email,
-                        password => $self->password,
-                    },
-                    data => {},
-                }
-            );
-
+            $auth{email}    = $self->email;
+            $auth{password} = $self->password;
         }
         else {
             croak
 "Trying to create a Toggl::Wrapper with no user or password neither api_token. You can only create an instance with an api key or email/passwrd, not both.";
         }
     }
+    $response_data = _make_api_call(
+        {
+            type    => 'GET',
+            url     => TOGGL_URL_V8 . 'me',
+            auth    => \%auth,
+            headers => [],
+            data    => {},
+        }
+    );
 
-    $self->_set_api_token( api_token => $response_data->{api_token} );
+    $self->_set_api_token( $response_data->{api_token} );
     $self->_set_email( $response_data->{email} );
     $self->_set_user_data($response_data);
 }
@@ -160,7 +151,13 @@ sub _make_api_call {
         my $r       = HTTP::Response->parse( $response->status_line );
         my $code    = $r->code;
         my $message = $r->message;
-        croak "Check your credentaials: APP call returned $code: $message";
+        if ( $code == 403 ) {
+            croak "Check your credentaials: APP call returned $code: $message";
+        }
+        else {
+
+            croak "An error ocurred: APP call returned $code: $message";
+        }
     }
 }
 
@@ -183,14 +180,16 @@ sub create_time_entry() {    #Not finished
     if ( !exists $time_entry_data{wid} ) {
         $time_entry_data{wid} = $self->_user_data->{default_wid};
     }
+
     my $response_data = _make_api_call(
         {
             type => 'POST',
             url  => TOGGL_URL_V8 . 'time_entries',
-            data => {
-                email    => $self->email,
-                password => $self->password,
+            auth => {
+                api_token => $self->api_token,
             },
+            headers => [ { 'content-type' => 'application/json' } ],
+            data => { time_entry => \%time_entry_data },
         }
     );
     return 1;

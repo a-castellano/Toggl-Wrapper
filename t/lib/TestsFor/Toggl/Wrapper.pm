@@ -142,24 +142,24 @@ qr/a $class with no user or password neither api_token. You can only create an i
 
 }
 
-sub time_entries : Tests(2) {
-    my $test  = shift;
-    my $class = $test->class_to_test;
-
-    my ( $mocked_lwp, $mocked_http_request, $mocked_http_response ) = mock();
-    $class->new( api_token => "u1tra53cr3tt0k3n" );
-
-  SKIP: {
-        ok $class->create_time_entry();
-
-        ok $class->get_time_entries(
-            start_date => '2013-03-10T15:42:46+02:00',
-            end_date   => '2013-03-11T15:42:46+02:00',
-          ),
-qr/Creating a time entry only with description and duration should work./;
-        skip "get_time_entries does not exist yet", 2, 1;
-    }
-}
+#sub time_entries : Tests(2) {
+#    my $test  = shift;
+#    my $class = $test->class_to_test;
+#
+#    my ( $mocked_lwp, $mocked_http_request, $mocked_http_response ) = mock();
+#    $class->new( api_token => "u1tra53cr3tt0k3n" );
+#
+#  SKIP: {
+#        ok $class->create_time_entry();
+#
+#        ok $class->get_time_entries(
+#            start_date => '2013-03-10T15:42:46+02:00',
+#            end_date   => '2013-03-11T15:42:46+02:00',
+#          ),
+#qr/Creating a time entry only with description and duration should work./;
+#        skip "get_time_entries does not exist yet", 2, 1;
+#    }
+#}
 
 sub mock {
 
