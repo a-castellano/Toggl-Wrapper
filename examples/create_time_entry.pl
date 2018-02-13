@@ -28,7 +28,9 @@ else {
     die "Wrong number of parameters";
 }
 
-my $entry = Toggl::Wrapper::TimeEntry->new(
+my $tggl = Toggl::Wrapper->new(%data);
+
+$tggl->create_time_entry(
     start_date => DateTime->new(
         year      => '2018',
         month     => '3',
@@ -49,11 +51,4 @@ my $entry = Toggl::Wrapper::TimeEntry->new(
     created_with => "TestEntry.pm",
     wid          => 1364303,
 );
-
-print $entry->as_json();
-
-#$tggl->create_time_entry(
-#    duration    => 1000,
-#    description => "Run this example."
-#);
 

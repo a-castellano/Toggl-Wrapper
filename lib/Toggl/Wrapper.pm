@@ -1,7 +1,9 @@
 package Toggl::Wrapper;
 
 =pod
+
 =encoding UTF-8
+
 =head1 NAME
 
   Toggl::Wrapper - Wrapper for the toggl.com task logging API
@@ -21,9 +23,11 @@ use HTTP::Response;
 use JSON::Parse ':all';
 use JSON;
 use Carp qw(croak);
-use namespace::autoclean;
 
+use Toggl::Wrapper::TimeEntry;
 use Data::Dumper;
+
+use namespace::autoclean;
 
 use constant TOGGL_URL_V8 => "https://www.toggl.com/api/v8/";
 use constant USER_AGENT =>
@@ -157,12 +161,35 @@ sub _make_api_call {
     }
 }
 
-=head2 Time Entries
+=head1 Time Entries
 Manage Toggl time entries.
 =cut
 
-sub get_time_entries() {    #Not finished
-    my $self = shift;
+=head1 Time Entries
+Manage Toggl time entries.
+=cut
+
+=head12 create_time_entry
+Creates and publishes a new time entry..
+=cut
+
+sub create_time_entry() {    #Not finished
+    my ( $self, %time_entry_data ) = @_;
+
+    # If there is no wid defined, Wrapper will use default one
+    if ( !exists $time_entry_data{wid} ) {
+        $time_entry_data{wid} = $self->_user_data->{default_wid};
+    }
+    my $response_data = _make_api_call(
+        {
+            type => 'POST',
+            url  => TOGGL_URL_V8 . 'time_entries',
+            data => {
+                email    => $self->email,
+                password => $self->password,
+            },
+        }
+    );
     return 1;
 }
 
