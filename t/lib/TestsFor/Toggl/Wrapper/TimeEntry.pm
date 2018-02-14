@@ -16,7 +16,7 @@ sub startup : Tests(startup) {
     my $class = $test->class_to_test;
 }
 
-sub constructor : Tests(9) {
+sub constructor : Tests(10) {
     my $test  = shift;
     my $class = $test->class_to_test;
 
@@ -159,6 +159,30 @@ sub constructor : Tests(9) {
             time_zone => 'local'
         ),
 
+        duration     => 900,
+        created_with => "TestEntry.pm"
+    );
+
+    ok $entry->as_json();
+
+    $entry = $class->new(
+        start_date => DateTime->new(
+            year      => '2018',
+            month     => '3',
+            day       => '8',
+            hour      => '12',
+            minute    => '0',
+            time_zone => 'local'
+        ),
+        stop_date => DateTime->new(
+            year      => '2018',
+            month     => '3',
+            day       => '8',
+            hour      => '12',
+            minute    => '15',
+            time_zone => 'local'
+        ),
+        duronly      => 1,
         duration     => 900,
         created_with => "TestEntry.pm"
     );
