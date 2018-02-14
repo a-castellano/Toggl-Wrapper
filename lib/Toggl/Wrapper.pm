@@ -167,7 +167,7 @@ sub _make_api_call {
         foreach my $key ( keys %$data ) {
             $json_data = "$json_data \"$key\":$data->{$key},";
         }
-        $json_data =~ s/,$//;
+        $json_data = substr( $json_data, 0, -1 );
         $json_data = "{$json_data}";
         $request->content($json_data);
     }
