@@ -30,7 +30,7 @@ else {
 
 my $tggl = Toggl::Wrapper->new(%data);
 
-$tggl->create_time_entry(
+print $tggl->create_time_entry(
     start_date => DateTime->new(
         year   => '2018',
         month  => '2',

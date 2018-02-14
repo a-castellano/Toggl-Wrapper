@@ -203,6 +203,9 @@ sub create_time_entry() {
         $time_entry_data{wid} = $self->_user_data->{default_wid};
     }
 
+    # Set created_with
+    $time_entry_data{created_with} = USER_AGENT;
+
     my $time_entry = Toggl::Wrapper::TimeEntry->new( \%time_entry_data );
 
     my $response_data = _make_api_call(
@@ -216,7 +219,7 @@ sub create_time_entry() {
             data => { time_entry => $time_entry->as_json() },
         }
     );
-    return 1;
+    return $response_data;
 }
 
 =head1 AUTHOR
