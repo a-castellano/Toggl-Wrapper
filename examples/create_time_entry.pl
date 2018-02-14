@@ -6,6 +6,7 @@ use lib '../lib';
 use DateTime;
 use Toggl::Wrapper;
 use Toggl::Wrapper::TimeEntry;
+use Data::Dumper;
 
 my $argsize;
 
@@ -30,16 +31,14 @@ else {
 
 my $tggl = Toggl::Wrapper->new(%data);
 
-print $tggl->create_time_entry(
+my $returned_data = $tggl->create_time_entry(
     start_date => DateTime->new(
         year   => '2018',
         month  => '2',
-        day    => '13',
-        hour   => '18',
+        day    => '14',
+        hour   => '12',
         minute => '0',
     ),
-    duration     => 1000,
-    created_with => "TestEntry.pm",
-    wid          => 1364303,
+    duration => 1000,
 );
 

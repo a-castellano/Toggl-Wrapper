@@ -89,6 +89,7 @@ user's account data.
 sub BUILD {
     my $self = shift;
 
+    my $response;
     my $response_data;
     my %auth;
 
@@ -112,7 +113,7 @@ sub BUILD {
 "Trying to create a Toggl::Wrapper with no user or password neither api_token. You can only create an instance with an api key or email/passwrd, not both.";
         }
     }
-    $response_data = _make_api_call(
+    $response = _make_api_call(
         {
             type    => 'GET',
             url     => TOGGL_URL_V8 . 'me',
@@ -122,9 +123,12 @@ sub BUILD {
         }
     );
 
+    $response_data = $response->{data};
+
     $self->_set_api_token( $response_data->{api_token} );
     $self->_set_email( $response_data->{email} );
     $self->_set_user_data($response_data);
+
 }
 
 =head2 _make_api_call
@@ -167,12 +171,11 @@ sub _make_api_call {
         $json_data = "{$json_data}";
         $request->content($json_data);
     }
-
     my $response = $wrapper->request($request);
     if ( $response->is_success ) {
         $response = $response->decoded_content;
         my $json = parse_json($response);
-        return $json->{data};
+        return $json;
     }
     else {
         my $r       = HTTP::Response->parse( $response->status_line );
@@ -198,8 +201,10 @@ Creates and publishes a new time entry..
 sub create_time_entry() {
     my ( $self, %time_entry_data ) = @_;
 
+    my $response;
+
     # If there is no wid defined, Wrapper will use default one
-    if ( $time_entry_data{wid} ) {
+    if ( !$time_entry_data{wid} ) {
         $time_entry_data{wid} = $self->_user_data->{default_wid};
     }
 
@@ -208,7 +213,7 @@ sub create_time_entry() {
 
     my $time_entry = Toggl::Wrapper::TimeEntry->new( \%time_entry_data );
 
-    my $response_data = _make_api_call(
+    $response = _make_api_call(
         {
             type => 'POST',
             url  => TOGGL_URL_V8 . 'time_entries',
@@ -219,7 +224,7 @@ sub create_time_entry() {
             data => { time_entry => $time_entry->as_json() },
         }
     );
-    return $response_data;
+    return $response;
 }
 
 =head1 AUTHOR

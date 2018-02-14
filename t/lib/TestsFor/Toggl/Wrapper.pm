@@ -6,6 +6,7 @@ use base 'TestsFor';
 use Test::MockModule;
 use Email::Valid;
 use HTTP::Response;
+use JSON;
 
 use Toggl::Wrapper;
 
@@ -142,7 +143,7 @@ qr/a $class with no user or password neither api_token. You can only create an i
 
 }
 
-sub create_entry : Tests(2) {
+sub create_entry : Tests(3) {
     my $test  = shift;
     my $class = $test->class_to_test;
 
@@ -157,6 +158,32 @@ sub create_entry : Tests(2) {
     throws_ok { $wrapper->create_time_entry( duration => 900 ) }
     qr/Attribute \(start_date\) is required at constructor/,
       "Calling create_time_entry with no start_date attribute should fail.";
+
+    my $return_json_example =
+'{"data":{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-13T12:00:00Z","stop":"2018-02-13T13:00:00Z","duration":"900","duronly":0,"at":"2018-02-14T05:01:00+00:00","uid":2143391}}';
+
+    $mocked_http_response->mock(
+        "decoded_content",
+        sub {
+            return $return_json_example;
+        }
+    );
+
+    my $returned_data = $wrapper->create_time_entry(
+        duration   => 900,
+        start_date => DateTime->new(
+            year   => '2018',
+            month  => '2',
+            day    => '13',
+            hour   => '18',
+            minute => '0',
+        ),
+    );
+    is_deeply(
+        decode_json encode_json($returned_data),
+        decode_json $return_json_example,
+        "Wrapper is able to create time entries."
+    );
 
 }
 
