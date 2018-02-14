@@ -1,7 +1,9 @@
 package Toggl::Wrapper::TimeEntry;
 
 =pod
+
 =encoding UTF-8
+
 =head1 NAME
 
   Toggl::Wrapper::TimeEntry - Toggl time entries manager
@@ -161,8 +163,8 @@ has 'at' => (
 =head1 SUBROUTINES/METHODS
 =head2 BUILD
 
-If stop date is set this method chacks if stop date is older than start data.
-It also converts data to ISO 8601 format.
+If stop date is set this method chacks if stop date is older than start
+data. It also converts data to ISO 8601 format.
 
 =cut
 
@@ -207,9 +209,11 @@ sub boolean_atributes {
 
 =head1 BUGS
 
-Please report any bugs or feature requests to C<bug-toggl-wrapper at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Toggl-Wrapper>.  I will be notified, and then you'll
-automatically be notified of progress on your bug as I make changes.
+Please report any bugs or feature requests to C<bug-toggl-wrapper at
+rt.cpan.org>, or through the web interface at
+L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Toggl-Wrapper>.  I
+will be notified, and then you'll automatically be notified of progress
+on your bug as I make changes.
 
 
 
@@ -272,11 +276,12 @@ mark, tradename, or logo of the Copyright Holder.
 This license includes the non-exclusive, worldwide, free-of-charge
 patent license to make, have made, use, offer to sell, sell, import and
 otherwise transfer the Package with respect to any patent claims
-licensable by the Copyright Holder that are necessarily infringed by the
-Package. If you institute patent litigation (including a cross-claim or
-counterclaim) against any party alleging that the Package constitutes
-direct or contributory patent infringement, then this Artistic License
-to you shall terminate on the date that such litigation is filed.
+licensable by the Copyright Holder that are necessarily infringed by
+the Package. If you institute patent litigation (including a
+cross-claim or counterclaim) against any party alleging that the
+Package constitutes direct or contributory patent infringement, then
+this Artistic License to you shall terminate on the date that such
+litigation is filed.
 
 Disclaimer of Warranty: THE PACKAGE IS PROVIDED BY THE COPYRIGHT HOLDER
 AND CONTRIBUTORS "AS IS' AND WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.

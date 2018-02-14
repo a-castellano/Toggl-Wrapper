@@ -1,7 +1,9 @@
 package Toggl::Wrapper;
 
 =pod
+
 =encoding UTF-8
+
 =head1 NAME
 
   Toggl::Wrapper - Wrapper for the toggl.com task logging API
@@ -21,13 +23,15 @@ use HTTP::Response;
 use JSON::Parse ':all';
 use JSON;
 use Carp qw(croak);
-use namespace::autoclean;
 
+use Toggl::Wrapper::TimeEntry;
 use Data::Dumper;
 
+use namespace::autoclean;
+
 use constant TOGGL_URL_V8 => "https://www.toggl.com/api/v8/";
-use constant USER_AGENT =>
-  "Toggl::Wrapper https://github.com/a-castellano/Toggl-Wrapper";
+use constant USER_AGENT   => "Toggl::Wrapper
+https://github.com/a-castellano/Toggl-Wrapper";
 
 =head1 VERSION
 
@@ -63,7 +67,9 @@ has '_user_data' => (
 
 =head1 SYNOPSIS
 
-This module aims to intereact with toggle.com API. For the time being, this module allows users to authenticate using user/password pair or an api token instead.
+This module aims to intereact with toggle.com API. For the time being,
+this module allows users to authenticate using user/password pair or an
+api token instead.
 
 
     use Toggl::Wrapper;
@@ -83,7 +89,9 @@ user's account data.
 sub BUILD {
     my $self = shift;
 
+    my $response;
     my $response_data;
+    my %auth;
 
     if ( $self->has_api_token ) {
         if ( $self->has_email || $self->has_password ) {
@@ -91,41 +99,36 @@ sub BUILD {
 "Trying to create a Toggl::Wrapper instance with and api_token and user/password. You can only create an instance with an api key or email/password, not both.\n";
         }
         else {
-            $response_data = _make_api_call(
-                {
-                    type => 'GET',
-                    url  => TOGGL_URL_V8 . 'me',
-                    data => {
-                        api_token => $self->api_token,
-                    },
-                }
-            );
+            $auth{api_token} = $self->api_token;
         }
     }
     else {
         #Thre is no api_token, check user and passwod
         if ( $self->has_email && $self->has_password ) {
-            $response_data = _make_api_call(
-                {
-                    type => 'GET',
-                    url  => TOGGL_URL_V8 . 'me',
-                    data => {
-                        email    => $self->email,
-                        password => $self->password,
-                    },
-                }
-            );
-
+            $auth{email}    = $self->email;
+            $auth{password} = $self->password;
         }
         else {
             croak
 "Trying to create a Toggl::Wrapper with no user or password neither api_token. You can only create an instance with an api key or email/passwrd, not both.";
         }
     }
+    $response = _make_api_call(
+        {
+            type    => 'GET',
+            url     => TOGGL_URL_V8 . 'me',
+            auth    => \%auth,
+            headers => [],
+            data    => {},
+        }
+    );
 
-    $self->_set_api_token( api_token => $response_data->{api_token} );
+    $response_data = $response->{data};
+
+    $self->_set_api_token( $response_data->{api_token} );
     $self->_set_email( $response_data->{email} );
     $self->_set_user_data($response_data);
+
 }
 
 =head2 _make_api_call
@@ -133,37 +136,95 @@ Perform GET/POST/PUT calls to Toggl API.
 =cut
 
 sub _make_api_call {
-    my $call    = shift;
-    my $data    = $call->{data};
-    my $wrapper = LWP::UserAgent->new( agent => USER_AGENT, cookie_jar => {} );
+    my $call      = shift;
+    my $auth      = $call->{auth};
+    my $headers   = $call->{headers};
+    my $data      = $call->{data};
+    my $json_data = "";
+    my $wrapper   = LWP::UserAgent->new(
+        agent      => USER_AGENT,
+        cookie_jar => {}
+    );
     my $request = HTTP::Request->new( $call->{type} => "$call->{url}" );
-    if ( $data->{api_token} ) {
-        $request->authorization_basic( $data->{api_token}, "api_token" );
+
+    # Auth
+    if ( $auth->{api_token} ) {
+        $request->authorization_basic( $auth->{api_token}, "api_token" );
     }
     else {
-        $request->authorization_basic( "$data->{email}", "$data->{password}" );
+        $request->authorization_basic( "$auth->{email}", "$auth->{password}" );
+    }
+
+    # Headers
+    if (@$headers) {
+        foreach my $header (@$headers) {
+            $request->header(%$header);
+        }
+    }
+
+    # Data
+    if (%$data) {
+        foreach my $key ( keys %$data ) {
+            $json_data = "$json_data \"$key\":$data->{$key},";
+        }
+        $json_data = substr( $json_data, 0, -1 );
+        $json_data = "{$json_data}";
+        $request->content($json_data);
     }
     my $response = $wrapper->request($request);
     if ( $response->is_success ) {
         $response = $response->decoded_content;
         my $json = parse_json($response);
-        return $json->{data};
+        return $json;
     }
     else {
         my $r       = HTTP::Response->parse( $response->status_line );
         my $code    = $r->code;
         my $message = $r->message;
-        croak "Check your credentaials: APP call returned $code: $message";
+        if ( $code == 403 ) {
+            croak "Check your credentaials: APP call returned $code: $message";
+        }
+        else {
+            croak "An error ocurred: APP call returned $code: $message";
+        }
     }
 }
 
-=head2 Time Entries
+=head1 Time Entries
 Manage Toggl time entries.
 =cut
 
-sub get_time_entries() {    #Not finished
-    my $self = shift;
-    return 1;
+=head1 create_time_entry
+Creates and publishes a new time entry..
+=cut
+
+sub create_time_entry() {
+    my ( $self, %time_entry_data ) = @_;
+
+    my $response;
+
+    # If there is no wid defined, Wrapper will use default one
+    if ( !$time_entry_data{wid} ) {
+        $time_entry_data{wid} = $self->_user_data->{default_wid};
+    }
+
+    # Set created_with
+    $time_entry_data{created_with} = USER_AGENT;
+
+    my $time_entry = Toggl::Wrapper::TimeEntry->new( \%time_entry_data );
+
+    $response = _make_api_call(
+        {
+            type => 'POST',
+            url  => TOGGL_URL_V8 . 'time_entries',
+            auth => {
+                api_token => $self->api_token,
+            },
+            headers => [ { 'content-type' => 'application/json' } ],
+            data => { time_entry => $time_entry->as_json() },
+        }
+    );
+    return $response;
 }
 
 =head1 AUTHOR
@@ -172,9 +233,11 @@ sub get_time_entries() {    #Not finished
 
 =head1 BUGS
 
-Please report any bugs or feature requests to C<bug-toggl-wrapper at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Toggl-Wrapper>.  I will be notified, and then you'll
-automatically be notified of progress on your bug as I make changes.
+Please report any bugs or feature requests to C<bug-toggl-wrapper at
+rt.cpan.org>, or through the web interface at
+L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Toggl-Wrapper>.  I
+will be notified, and then you'll automatically be notified of progress
+on your bug as I make changes.
 
 =head1 SUPPORT
 
@@ -234,11 +297,12 @@ mark, tradename, or logo of the Copyright Holder.
 This license includes the non-exclusive, worldwide, free-of-charge
 patent license to make, have made, use, offer to sell, sell, import and
 otherwise transfer the Package with respect to any patent claims
-licensable by the Copyright Holder that are necessarily infringed by the
-Package. If you institute patent litigation (including a cross-claim or
-counterclaim) against any party alleging that the Package constitutes
-direct or contributory patent infringement, then this Artistic License
-to you shall terminate on the date that such litigation is filed.
+licensable by the Copyright Holder that are necessarily infringed by
+the Package. If you institute patent litigation (including a
+cross-claim or counterclaim) against any party alleging that the
+Package constitutes direct or contributory patent infringement, then
+this Artistic License to you shall terminate on the date that such
+litigation is filed.
 
 Disclaimer of Warranty: THE PACKAGE IS PROVIDED BY THE COPYRIGHT HOLDER
 AND CONTRIBUTORS "AS IS' AND WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.

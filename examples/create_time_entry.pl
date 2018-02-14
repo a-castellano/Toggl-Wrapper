@@ -6,6 +6,7 @@ use lib '../lib';
 use DateTime;
 use Toggl::Wrapper;
 use Toggl::Wrapper::TimeEntry;
+use Data::Dumper;
 
 my $argsize;
 
@@ -28,32 +29,16 @@ else {
     die "Wrong number of parameters";
 }
 
-my $entry = Toggl::Wrapper::TimeEntry->new(
+my $tggl = Toggl::Wrapper->new(%data);
+
+my $returned_data = $tggl->create_time_entry(
     start_date => DateTime->new(
-        year      => '2018',
-        month     => '3',
-        day       => '12',
-        hour      => '12',
-        minute    => '0',
-        time_zone => 'local'
+        year   => '2018',
+        month  => '2',
+        day    => '14',
+        hour   => '12',
+        minute => '0',
     ),
-    stop_date => DateTime->new(
-        year      => '2018',
-        month     => '3',
-        day       => '12',
-        hour      => '13',
-        minute    => '0',
-        time_zone => 'local'
-    ),
-    duration     => 900,
-    created_with => "TestEntry.pm",
-    wid          => 1364303,
+    duration => 1000,
 );
-
-print $entry->as_json();
-
-#$tggl->create_time_entry(
-#    duration    => 1000,
-#    description => "Run this example."
-#);
 
