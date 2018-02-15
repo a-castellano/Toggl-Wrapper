@@ -137,7 +137,8 @@ has 'duration' => (
 has 'created_with' => (
     is       => 'ro',
     isa      => 'Str',
-    required => 1,
+    required => 0,       # Toggl API requires this attribute. It is up to
+    wrappers to set it .
 );
 
 has 'tags' => (
