@@ -250,7 +250,7 @@ sub start_time_entry() {
     $self->_set_required_default_time_entry_values( \%time_entry_data );
 
     # Start time does not need duration, set negative one.
-    $time_entry_data{duration}   = -( time() );
+    $time_entry_data{duration}   = 0;
     $time_entry_data{start_date} = DateTime->now;
 
     my $response;
