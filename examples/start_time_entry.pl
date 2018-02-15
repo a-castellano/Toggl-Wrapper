@@ -31,14 +31,5 @@ else {
 
 my $tggl = Toggl::Wrapper->new(%data);
 
-my $returned_data = $tggl->create_time_entry(
-    start_date => DateTime->new(
-        year   => '2018',
-        month  => '2',
-        day    => '15',
-        hour   => '6',
-        minute => '0',
-    ),
-    duration => 1000,
-);
+my $returned_data = $tggl->start_time_entry();
 

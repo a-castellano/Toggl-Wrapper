@@ -194,29 +194,72 @@ sub _make_api_call {
 Manage Toggl time entries.
 =cut
 
-=head1 create_time_entry
-Creates and publishes a new time entry..
+=head2 _set_required_default_time_entry_values
+Sets TimeEntry 'wid' if there is no one defined.
+It also sets created_with attribute.
+=cut
+
+sub _set_required_default_time_entry_values() {
+    my ( $self, $time_entry_data ) = @_;
+
+    my $response;
+
+    # If there is no wid defined, Wrapper will use default one
+    if ( !$time_entry_data->{wid} ) {
+        $time_entry_data->{wid} = $self->_user_data->{default_wid};
+    }
+
+    # Set created_with
+    $time_entry_data->{created_with} = USER_AGENT;
+
+}
+
+=head2 create_time_entry
+Creates and publishes a new time entry.
 =cut
 
 sub create_time_entry() {
     my ( $self, %time_entry_data ) = @_;
 
+    $self->_set_required_default_time_entry_values( \%time_entry_data );
+
     my $response;
-
-    # If there is no wid defined, Wrapper will use default one
-    if ( !$time_entry_data{wid} ) {
-        $time_entry_data{wid} = $self->_user_data->{default_wid};
-    }
-
-    # Set created_with
-    $time_entry_data{created_with} = USER_AGENT;
-
     my $time_entry = Toggl::Wrapper::TimeEntry->new( \%time_entry_data );
 
     $response = _make_api_call(
         {
             type => 'POST',
             url  => TOGGL_URL_V8 . 'time_entries',
+            auth => {
+                api_token => $self->api_token,
+            },
+            headers => [ { 'content-type' => 'application/json' } ],
+            data => { time_entry => $time_entry->as_json() },
+        }
+    );
+    return $response;
+}
+
+=head2 start_time_entry
+Starts new time entry.
+=cut
+
+sub start_time_entry() {
+    my ( $self, %time_entry_data ) = @_;
+
+    $self->_set_required_default_time_entry_values( \%time_entry_data );
+
+    # Start time does not need duration, set negative one.
+    $time_entry_data{duration}   = 0;
+    $time_entry_data{start_date} = DateTime->now;
+
+    my $response;
+    my $time_entry = Toggl::Wrapper::TimeEntry->new( \%time_entry_data );
+
+    $response = _make_api_call(
+        {
+            type => 'POST',
+            url  => TOGGL_URL_V8 . 'time_entries/start',
             auth => {
                 api_token => $self->api_token,
             },
