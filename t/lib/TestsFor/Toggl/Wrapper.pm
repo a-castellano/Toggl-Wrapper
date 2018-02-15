@@ -195,9 +195,6 @@ sub start_entry : Tests(1) {
 
     my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
 
-    ok $class->new( api_token => "u1tra53cr3tt0k3n" ),
-      qr/With right token, constructor works/;
-
     my $return_json_example =
 '{"data":{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-14T12:00:00Z","duration":"-900"}}';
 
