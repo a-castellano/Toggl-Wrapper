@@ -16,7 +16,7 @@ sub startup : Tests(startup) {
     my $class = $test->class_to_test;
 }
 
-sub constructor : Tests(10) {
+sub constructor : Tests(9) {
     my $test  = shift;
     my $class = $test->class_to_test;
 
@@ -39,10 +39,6 @@ sub constructor : Tests(10) {
     );
 
     can_ok $class, 'new';
-
-    throws_ok { $class->new }
-    qr/Attribute \(created_with\) is required at constructor/,
-      "Creating a $class without required attributes should fail.";
 
     throws_ok {
         $class->new( created_with => "TestEntry.pm" );
