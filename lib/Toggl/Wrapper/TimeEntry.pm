@@ -55,10 +55,11 @@ at: timestamp that is sent in the response, indicates the time item was last upd
 =cut
 
 has 'id' => (
-    is       => 'ro',
-    isa      => 'Int',
-    writer   => 'set_id',
-    required => 0,
+    is        => 'ro',
+    isa       => 'Int',      #
+    writer    => 'set_id',
+    predicate => 'has_id',
+    required  => 0,
 );
 
 has 'guid' => (

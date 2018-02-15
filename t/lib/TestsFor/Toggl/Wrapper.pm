@@ -227,7 +227,7 @@ sub stop_entry : Tests(1) {
         }
     );
 
-    $time_entry = Toggl::Wrapper::TimeEntry( $wrapper->start_time_entry() );
+    my $time_entry = $wrapper->start_time_entry();
     ok $wrapper->stop_time_entry($time_entry), "Stop time entry.";
 }
 

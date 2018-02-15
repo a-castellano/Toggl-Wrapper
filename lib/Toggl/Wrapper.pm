@@ -246,6 +246,8 @@ Starts new time entry.
 
 sub start_time_entry() {
     my ( $self, %time_entry_data ) = @_;
+    my $response;
+    my %response_data;
 
     $self->_set_required_default_time_entry_values( \%time_entry_data );
 
@@ -253,7 +255,6 @@ sub start_time_entry() {
     $time_entry_data{duration}   = 0;
     $time_entry_data{start_date} = DateTime->now;
 
-    my $response;
     my $time_entry = Toggl::Wrapper::TimeEntry->new( \%time_entry_data );
 
     $response = _make_api_call(
@@ -265,6 +266,33 @@ sub start_time_entry() {
             },
             headers => [ { 'content-type' => 'application/json' } ],
             data => { time_entry => $time_entry->as_json() },
+        }
+    );
+    %response_data = %{ $response->{data} };
+    return Toggl::Wrapper::TimeEntry->new( \%response_data );
+}
+
+=head2 stop_time_entry
+Stop given time entry.
+=cut
+
+sub stop_time_entry() {
+    my ( $self, $time_entry ) = @_;
+    my $response;
+    die Dumper $time_entry;
+    if ( !$time_entry->has_id ) {
+        croak "Error: passed entry does not contain 'id' field.";
+    }
+
+    $response = _make_api_call(
+        {
+            type => 'PUT',
+            url  => TOGGL_URL_V8
+              . "time_entries/"
+              . $time_entry->get_id() . "/stop",
+            auth => {
+                api_token => $self->api_token,
+            },
         }
     );
     return $response;
