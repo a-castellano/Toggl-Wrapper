@@ -268,8 +268,7 @@ sub start_time_entry() {
             data => { time_entry => $time_entry->as_json() },
         }
     );
-    %response_data = %{ $response->{data} };
-    return Toggl::Wrapper::TimeEntry->new( \%response_data );
+    return Toggl::Wrapper::TimeEntry->new( $response->{data} );
 }
 
 =head2 stop_time_entry
@@ -279,9 +278,9 @@ Stop given time entry.
 sub stop_time_entry() {
     my ( $self, $time_entry ) = @_;
     my $response;
-    die Dumper $time_entry;
     if ( !$time_entry->has_id ) {
-        croak "Error: passed entry does not contain 'id' field.";
+        croak "Error:
+passed entry does not contain 'id' field.";
     }
 
     $response = _make_api_call(

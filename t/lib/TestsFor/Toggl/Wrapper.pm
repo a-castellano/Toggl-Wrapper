@@ -157,7 +157,7 @@ sub create_entry : Tests(3) {
       "Calling create_time_entry with no duration attribute should fail.";
 
     throws_ok { $wrapper->create_time_entry( duration => 900 ) }
-    qr/Attribute \(start_date\) is required at constructor/,
+qr/TimeEntry does not allow to be instanced without 'start_date' or 'start'/,
       "Calling create_time_entry with no start_date attribute should fail.";
 
     my $return_json_example =

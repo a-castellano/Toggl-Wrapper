@@ -33,6 +33,6 @@ my $tggl = Toggl::Wrapper->new(%data);
 
 my $returned_data = $tggl->start_time_entry();
 
-my $started_entry = Toggl::Wrapper::TimeEntry->new($returned_data);
+#my $started_entry = Toggl::Wrapper::TimeEntry->new($returned_data);
 
 print $returned_data->id;

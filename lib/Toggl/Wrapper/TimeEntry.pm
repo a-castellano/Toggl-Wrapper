@@ -113,7 +113,7 @@ has 'start' => (
     is        => 'ro',
     isa       => 'Str',
     required  => 0,
-    writer    => 'set_start_date_iso8601',
+    writer    => 'set_start',
     predicate => 'has_start',
 
     #    init_arg => undef,
@@ -130,7 +130,7 @@ has 'stop' => (
     is        => 'ro',
     isa       => 'Str',
     required  => 0,
-    writer    => 'set_stop_date_iso8601',
+    writer    => 'set_stop',
     predicate => 'has_stop',
 
     #init_arg => undef,
@@ -166,7 +166,13 @@ has 'duronly' => (
 
 has 'at' => (
     is       => 'ro',
-    isa      => 'DateTime',
+    isa      => 'Str',
+    required => 0,
+);
+
+has 'uid' => (
+    is       => 'ro',
+    isa      => 'Int',
     required => 0,
 );
 
@@ -185,8 +191,12 @@ Returns True or False if given istring is a correct iso8601 formated date.
 
 sub _check_iso8601 {
     my ( $self, $date ) = @_;
-    return =~
-m/^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\\.[0-9]+)?(Z)?$/;
+    if ( DateTime::Format::ISO8601->parse_datetime($date) ) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
 }
 
 sub BUILD {
@@ -200,7 +210,7 @@ sub BUILD {
 
     if ( !$self->has_start_date && !$self->has_start ) {
         croak
-"TimeEntry does not allow to be instanced without 'start_date' or'start'.";
+"TimeEntry does not allow to be instanced without 'start_date' or 'start'.";
     }
 
     if ( $self->has_stop_date && $self->has_stop ) {
@@ -209,7 +219,7 @@ sub BUILD {
     }
 
     if ( $self->has_start_date ) {
-        $self->set_start_date_iso8601( $self->start_date->iso8601() . 'Z' );
+        $self->set_start( $self->start_date->iso8601() . 'Z' );
     }
     else {
         if ( !$self->_check_iso8601( $self->start ) ) {
@@ -221,7 +231,7 @@ sub BUILD {
         if ( DateTime->compare( $self->start_date, $self->stop_date ) > 0 ) {
             croak "End date has to be greater than start date.";
         }
-        $self->set_stop_date_iso8601( $self->stop_date->iso8601() . 'Z' );
+        $self->set_stop( $self->stop_date->iso8601() . 'Z' );
     }
     elsif ( $self->has_stop ) {
         if ( !$self->_check_iso8601( $self->stop ) ) {
