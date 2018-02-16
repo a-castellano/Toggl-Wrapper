@@ -115,8 +115,6 @@ has 'start' => (
     required  => 0,
     writer    => 'set_start',
     predicate => 'has_start',
-
-    #    init_arg => undef,
 );
 
 has 'stop_date' => (
@@ -132,8 +130,6 @@ has 'stop' => (
     required  => 0,
     writer    => 'set_stop',
     predicate => 'has_stop',
-
-    #init_arg => undef,
 );
 
 has 'duration' => (
@@ -215,7 +211,7 @@ sub BUILD {
 
     if ( $self->has_stop_date && $self->has_stop ) {
         croak
-"TimeEntry does not allow to be instanced with 'stop_date' and 'stop' at the same time. Use only one.";
+"TimeEntry does not allow to be instanced with 'stop_date' and 'stop' at the same time. Only one of them is allowed.";
     }
 
     if ( $self->has_start_date ) {
@@ -228,26 +224,24 @@ sub BUILD {
     }
 
     if ( $self->has_stop_date ) {
-        if ( DateTime->compare( $self->start_date, $self->stop_date ) > 0 ) {
-            croak "End date has to be greater than start date.";
-        }
         $self->set_stop( $self->stop_date->iso8601() . 'Z' );
     }
     elsif ( $self->has_stop ) {
         if ( !$self->_check_iso8601( $self->stop ) ) {
             croak "Attibute 'stop' format is not valid.";
         }
-        if (
-            DateTime->compare(
-                DateTime::Format::ISO8601->parse_datetime( $self->start ),
-                DateTime::Format::ISO8601->parse_datetime( $self->stop )
-            ) > 0
-          )
-        {
-            croak "End date has to be greater than start date.";
-        }
-
     }
+
+    if (
+        DateTime->compare(
+            DateTime::Format::ISO8601->parse_datetime( $self->start ),
+            DateTime::Format::ISO8601->parse_datetime( $self->stop )
+        ) > 0
+      )
+    {
+        croak "End date has to be greater than start date.";
+    }
+
 }
 
 =head2 serializable_attributes

@@ -173,11 +173,12 @@ qr/TimeEntry does not allow to be instanced without 'start_date' or 'start'/,
     my $returned_data = $wrapper->create_time_entry(
         duration   => 900,
         start_date => DateTime->new(
-            year   => '2018',
-            month  => '2',
-            day    => '13',
-            hour   => '18',
-            minute => '0',
+            year      => '2018',
+            month     => '2',
+            day       => '13',
+            hour      => '18',
+            minute    => '0',
+            time_zone => 'local',
         ),
     );
     is_deeply(

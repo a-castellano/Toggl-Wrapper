@@ -29,6 +29,32 @@ else {
     die "Wrong number of parameters";
 }
 
+Toggl::Wrapper::TimeEntry->new(
+
+    start_date => DateTime->new(
+        year      => '2018',
+        month     => '3',
+        day       => '7',
+        hour      => '13',
+        minute    => '0',
+        time_zone => 'local'
+    ),
+
+    stop_date => DateTime->new(
+        year      => '2018',
+        month     => '3',
+        day       => '7',
+        hour      => '12',
+        minute    => '0',
+        time_zone => 'local'
+    ),
+
+    #stop => '2017-02-15T11:15:00Z',
+    #          start         => '2017-02-16T11:15:00Z',
+    duration     => 900,
+    created_with => "TestEntry.pm"
+);
+
 my $tggl = Toggl::Wrapper->new(%data);
 
 my $returned_data = $tggl->start_time_entry();

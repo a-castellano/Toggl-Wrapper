@@ -260,7 +260,7 @@ sub start_time_entry() {
     $response = _make_api_call(
         {
             type => 'POST',
-            url  => TOGGL_URL_V8 . 'time_entries/start',
+            url  => join( '', TOGGL_URL_V8, 'time_entries/start' ),
             auth => {
                 api_token => $self->api_token,
             },
@@ -286,9 +286,8 @@ passed entry does not contain 'id' field.";
     $response = _make_api_call(
         {
             type => 'PUT',
-            url  => TOGGL_URL_V8
-              . "time_entries/"
-              . $time_entry->get_id() . "/stop",
+            url =>
+              join( TOGGL_URL_V8, "time_entries/", $time_entry->id(), "/stop" ),
             auth => {
                 api_token => $self->api_token,
             },
