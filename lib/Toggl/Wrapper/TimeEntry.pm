@@ -17,7 +17,9 @@ use Moose::Util::TypeConstraints;
 use MooseX::StrictConstructor;
 use MooseX::SemiAffordanceAccessor;
 use DateTime;
+use DateTime::Format::ISO8601;
 use Carp qw(croak);
+
 with "Utils::Role::Serializable::JSON";
 use namespace::autoclean;
 
@@ -101,17 +103,20 @@ has 'billable' => (
 );
 
 has 'start_date' => (
-    is       => 'ro',
-    isa      => 'DateTime',
-    required => 1,
+    is        => 'ro',
+    isa       => 'DateTime',
+    required  => 0,
+    predicate => 'has_start_date',
 );
 
 has 'start' => (
-    is       => 'ro',
-    isa      => 'Str',
-    required => 0,
-    writer   => 'set_start_date_iso8601',
-    init_arg => undef,
+    is        => 'ro',
+    isa       => 'Str',
+    required  => 0,
+    writer    => 'set_start_date_iso8601',
+    predicate => 'has_start',
+
+    #    init_arg => undef,
 );
 
 has 'stop_date' => (
@@ -122,11 +127,13 @@ has 'stop_date' => (
 );
 
 has 'stop' => (
-    is       => 'ro',
-    isa      => 'Str',
-    required => 0,
-    writer   => 'set_stop_date_iso8601',
-    init_arg => undef,
+    is        => 'ro',
+    isa       => 'Str',
+    required  => 0,
+    writer    => 'set_stop_date_iso8601',
+    predicate => 'has_stop',
+
+    #init_arg => undef,
 );
 
 has 'duration' => (
@@ -171,17 +178,65 @@ data. It also converts data to ISO 8601 format.
 
 =cut
 
+=head2 _check_iso8601
+Returns True or False if given istring is a correct iso8601 formated date.
+
+=cut
+
+sub _check_iso8601 {
+    my ( $self, $date ) = @_;
+    return =~
+m/^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\\.[0-9]+)?(Z)?$/;
+}
+
 sub BUILD {
     my $self = shift;
     my $timestamp;
 
-    $self->set_start_date_iso8601( $self->start_date->iso8601() . 'Z' );
+    if ( $self->has_start_date && $self->has_start ) {
+        croak
+"TimeEntry does not allow to be instanced with 'start_date' and 'start' at the same time. Only one of them is allowed.";
+    }
+
+    if ( !$self->has_start_date && !$self->has_start ) {
+        croak
+"TimeEntry does not allow to be instanced without 'start_date' or'start'.";
+    }
+
+    if ( $self->has_stop_date && $self->has_stop ) {
+        croak
+"TimeEntry does not allow to be instanced with 'stop_date' and 'stop' at the same time. Use only one.";
+    }
+
+    if ( $self->has_start_date ) {
+        $self->set_start_date_iso8601( $self->start_date->iso8601() . 'Z' );
+    }
+    else {
+        if ( !$self->_check_iso8601( $self->start ) ) {
+            croak "Attibute 'start' format is not valid.";
+        }
+    }
 
     if ( $self->has_stop_date ) {
         if ( DateTime->compare( $self->start_date, $self->stop_date ) > 0 ) {
             croak "End date has to be greater than start date.";
         }
         $self->set_stop_date_iso8601( $self->stop_date->iso8601() . 'Z' );
+    }
+    elsif ( $self->has_stop ) {
+        if ( !$self->_check_iso8601( $self->stop ) ) {
+            croak "Attibute 'stop' format is not valid.";
+        }
+        if (
+            DateTime->compare(
+                DateTime::Format::ISO8601->parse_datetime( $self->start ),
+                DateTime::Format::ISO8601->parse_datetime( $self->stop )
+            ) > 0
+          )
+        {
+            croak "End date has to be greater than start date.";
+        }
+
     }
 }
 
