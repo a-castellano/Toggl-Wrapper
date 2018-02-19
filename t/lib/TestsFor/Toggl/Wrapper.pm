@@ -7,6 +7,7 @@ use Test::MockModule;
 use Email::Valid;
 use HTTP::Response;
 use JSON;
+use Data::Dumper;
 
 use Toggl::Wrapper;
 use Toggl::Wrapper::TimeEntry;
@@ -250,10 +251,13 @@ sub get_entry_details : Tests(1) {
         }
     );
 
+    my $json =
+'{"guid":null,"tid":null,"id":"798455036","duronly":false,"pid":null,"tags":null,"duration":"-900","start":"2018-02-14T12:00:00Z","at":null,"created_with":null,"stop":null,"billable":false,"description":null,"wid":"1364303"}';
+
     my $time_entry = $wrapper->get_time_entry_details(798455036);
     is_deeply(
         decode_json $time_entry->as_json(),
-        decode_json $return_json_example,
+        decode_json $json,
         "Wrapper is able to get time entries details."
     );
 }
