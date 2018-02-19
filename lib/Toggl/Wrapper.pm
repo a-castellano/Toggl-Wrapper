@@ -237,7 +237,7 @@ sub create_time_entry() {
             auth => {
                 api_token => $self->api_token,
             },
-            headers => [ { 'content-type' => 'application/json' } ],
+            headers => [ { 'Content-Type' => 'application/json' } ],
             data => { time_entry => $time_entry->as_json() },
         }
     );
@@ -268,7 +268,7 @@ sub start_time_entry() {
             auth => {
                 api_token => $self->api_token,
             },
-            headers => [ { 'content-type' => 'application/json' } ],
+            headers => [ { 'Content-Type' => 'application/json' } ],
             data => { time_entry => $time_entry->as_json() },
         }
     );
@@ -292,6 +292,29 @@ passed entry does not contain 'id' field.";
             type => 'PUT',
             url  => join( '',
                 ( TOGGL_URL_V8, "time_entries/", $time_entry->id(), "/stop" ) ),
+            auth => {
+                api_token => $self->api_token,
+            },
+            headers => [ { 'Content-Type' => 'application/json' } ],
+            data    => {},
+        }
+    );
+    return $response;
+}
+
+=head2 get_time_entry_details
+Get time entry details from a given entry id.
+=cut
+
+sub get_time_entry_details() {
+    my ( $self, $time_entry_id ) = @_;
+    my $response;
+
+    $response = _make_api_call(
+        {
+            type => 'POST',
+            url =>
+              join( '', ( TOGGL_URL_V8, "time_entries/", $time_entry_id ) ),
             auth => {
                 api_token => $self->api_token,
             },
