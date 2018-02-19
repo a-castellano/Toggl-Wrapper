@@ -9,6 +9,7 @@ use HTTP::Response;
 use JSON;
 
 use Toggl::Wrapper;
+use Toggl::Wrapper::TimeEntry;
 
 sub class_to_test { 'Toggl::Wrapper' }
 
@@ -156,7 +157,7 @@ sub create_entry : Tests(3) {
       "Calling create_time_entry with no duration attribute should fail.";
 
     throws_ok { $wrapper->create_time_entry( duration => 900 ) }
-    qr/Attribute \(start_date\) is required at constructor/,
+qr/TimeEntry does not allow to be instanced without 'start_date' or 'start'/,
       "Calling create_time_entry with no start_date attribute should fail.";
 
     my $return_json_example =
@@ -172,11 +173,12 @@ sub create_entry : Tests(3) {
     my $returned_data = $wrapper->create_time_entry(
         duration   => 900,
         start_date => DateTime->new(
-            year   => '2018',
-            month  => '2',
-            day    => '13',
-            hour   => '18',
-            minute => '0',
+            year      => '2018',
+            month     => '2',
+            day       => '13',
+            hour      => '18',
+            minute    => '0',
+            time_zone => 'local',
         ),
     );
     is_deeply(
@@ -206,6 +208,28 @@ sub start_entry : Tests(1) {
     );
 
     ok $wrapper->start_time_entry(), "Start time_entry";
+}
+
+sub stop_entry : Tests(1) {
+    my $test  = shift;
+    my $class = $test->class_to_test;
+
+    my ( $mocked_lwp, $mocked_http_request, $mocked_http_response ) = mock();
+
+    my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
+
+    my $return_json_example =
+'{"data":{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-14T12:00:00Z","duration":"-900"}}';
+
+    $mocked_http_response->mock(
+        "decoded_content",
+        sub {
+            return $return_json_example;
+        }
+    );
+
+    my $time_entry = $wrapper->start_time_entry();
+    ok $wrapper->stop_time_entry($time_entry), "Stop time entry.";
 }
 
 sub mock {

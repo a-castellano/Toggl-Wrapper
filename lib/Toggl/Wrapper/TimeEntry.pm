@@ -17,7 +17,9 @@ use Moose::Util::TypeConstraints;
 use MooseX::StrictConstructor;
 use MooseX::SemiAffordanceAccessor;
 use DateTime;
+use DateTime::Format::ISO8601;
 use Carp qw(croak);
+
 with "Utils::Role::Serializable::JSON";
 use namespace::autoclean;
 
@@ -55,10 +57,11 @@ at: timestamp that is sent in the response, indicates the time item was last upd
 =cut
 
 has 'id' => (
-    is       => 'ro',
-    isa      => 'Int',
-    writer   => 'set_id',
-    required => 0,
+    is        => 'ro',
+    isa       => 'Int',      #
+    writer    => 'set_id',
+    predicate => 'has_id',
+    required  => 0,
 );
 
 has 'guid' => (
@@ -100,17 +103,18 @@ has 'billable' => (
 );
 
 has 'start_date' => (
-    is       => 'ro',
-    isa      => 'DateTime',
-    required => 1,
+    is        => 'ro',
+    isa       => 'DateTime',
+    required  => 0,
+    predicate => 'has_start_date',
 );
 
 has 'start' => (
-    is       => 'ro',
-    isa      => 'Str',
-    required => 0,
-    writer   => 'set_start_date_iso8601',
-    init_arg => undef,
+    is        => 'ro',
+    isa       => 'Str',
+    required  => 0,
+    writer    => 'set_start',
+    predicate => 'has_start',
 );
 
 has 'stop_date' => (
@@ -121,11 +125,11 @@ has 'stop_date' => (
 );
 
 has 'stop' => (
-    is       => 'ro',
-    isa      => 'Str',
-    required => 0,
-    writer   => 'set_stop_date_iso8601',
-    init_arg => undef,
+    is        => 'ro',
+    isa       => 'Str',
+    required  => 0,
+    writer    => 'set_stop',
+    predicate => 'has_stop',
 );
 
 has 'duration' => (
@@ -134,10 +138,12 @@ has 'duration' => (
     required => 1,
 );
 
+# Toggl API requires this attribute. It is up to wrappers to set it.
+
 has 'created_with' => (
     is       => 'ro',
     isa      => 'Str',
-    required => 1,
+    required => 0,
 );
 
 has 'tags' => (
@@ -156,11 +162,33 @@ has 'duronly' => (
 
 has 'at' => (
     is       => 'ro',
-    isa      => 'DateTime',
+    isa      => 'Str',
+    required => 0,
+);
+
+has 'uid' => (
+    is       => 'ro',
+    isa      => 'Int',
     required => 0,
 );
 
 =head1 SUBROUTINES/METHODS
+
+=head2 _check_iso8601
+Returns True or False if given istring is a correct iso8601 formated date.
+
+=cut
+
+sub _check_iso8601 {
+    my ( $self, $date ) = @_;
+    if ( DateTime::Format::ISO8601->parse_datetime($date) ) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
 =head2 BUILD
 
 If stop date is set this method chacks if stop date is older than start
@@ -170,16 +198,53 @@ data. It also converts data to ISO 8601 format.
 
 sub BUILD {
     my $self = shift;
-    my $timestamp;
 
-    $self->set_start_date_iso8601( $self->start_date->iso8601() . 'Z' );
+    if ( $self->has_start_date && $self->has_start ) {
+        croak
+"TimeEntry does not allow to be instanced with 'start_date' and 'start' at the same time. Only one of them is allowed.";
+    }
+
+    if ( !$self->has_start_date && !$self->has_start ) {
+        croak
+"TimeEntry does not allow to be instanced without 'start_date' or 'start'.";
+    }
+
+    if ( $self->has_stop_date && $self->has_stop ) {
+        croak
+"TimeEntry does not allow to be instanced with 'stop_date' and 'stop' at the same time. Only one of them is allowed.";
+    }
+
+    if ( $self->has_start_date ) {
+        $self->set_start( $self->start_date->iso8601() . 'Z' );
+    }
+    else {
+        if ( !$self->_check_iso8601( $self->start ) ) {
+            croak "Attibute 'start' format is not valid.";
+        }
+    }
 
     if ( $self->has_stop_date ) {
-        if ( DateTime->compare( $self->start_date, $self->stop_date ) > 0 ) {
+        $self->set_stop( $self->stop_date->iso8601() . 'Z' );
+    }
+    elsif ( $self->has_stop ) {
+        if ( !$self->_check_iso8601( $self->stop ) ) {
+            croak "Attibute 'stop' format is not valid.";
+        }
+    }
+
+    if ( $self->has_stop ) {
+        if (
+            DateTime->compare(
+                DateTime::Format::ISO8601->parse_datetime( $self->start ),
+                DateTime::Format::ISO8601->parse_datetime( $self->stop )
+            ) > 0
+          )
+        {
             croak "End date has to be greater than start date.";
         }
-        $self->set_stop_date_iso8601( $self->stop_date->iso8601() . 'Z' );
+
     }
+
 }
 
 =head2 serializable_attributes

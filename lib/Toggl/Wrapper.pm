@@ -171,6 +171,10 @@ sub _make_api_call {
         $json_data = "{$json_data}";
         $request->content($json_data);
     }
+    else {
+        $request->content("");
+    }
+
     my $response = $wrapper->request($request);
     if ( $response->is_success ) {
         $response = $response->decoded_content;
@@ -246,25 +250,53 @@ Starts new time entry.
 
 sub start_time_entry() {
     my ( $self, %time_entry_data ) = @_;
+    my $response;
+    my %response_data;
 
     $self->_set_required_default_time_entry_values( \%time_entry_data );
 
     # Start time does not need duration, set negative one.
     $time_entry_data{duration}   = 0;
-    $time_entry_data{start_date} = DateTime->now;
+    $time_entry_data{start_date} = DateTime->now();
 
-    my $response;
-    my $time_entry = Toggl::Wrapper::TimeEntry->new( \%time_entry_data );
+    my $time_entry = Toggl::Wrapper::TimeEntry->new(%time_entry_data);
 
     $response = _make_api_call(
         {
             type => 'POST',
-            url  => TOGGL_URL_V8 . 'time_entries/start',
+            url  => join( '', ( TOGGL_URL_V8, 'time_entries/start' ) ),
             auth => {
                 api_token => $self->api_token,
             },
             headers => [ { 'content-type' => 'application/json' } ],
             data => { time_entry => $time_entry->as_json() },
+        }
+    );
+    return Toggl::Wrapper::TimeEntry->new( $response->{data} );
+}
+
+=head2 stop_time_entry
+Stop given time entry.
+=cut
+
+sub stop_time_entry() {
+    my ( $self, $time_entry ) = @_;
+    my $response;
+    if ( !$time_entry->has_id ) {
+        croak "Error:
+passed entry does not contain 'id' field.";
+    }
+
+    $response = _make_api_call(
+        {
+            type => 'PUT',
+            url  => join( '',
+                ( TOGGL_URL_V8, "time_entries/", $time_entry->id(), "/stop" ) ),
+            auth => {
+                api_token => $self->api_token,
+            },
+            headers => [ { 'content-type' => 'application/json' } ],
+            data    => {},
         }
     );
     return $response;
