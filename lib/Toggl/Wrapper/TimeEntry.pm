@@ -173,12 +173,6 @@ has 'uid' => (
 );
 
 =head1 SUBROUTINES/METHODS
-=head2 BUILD
-
-If stop date is set this method chacks if stop date is older than start
-data. It also converts data to ISO 8601 format.
-
-=cut
 
 =head2 _check_iso8601
 Returns True or False if given istring is a correct iso8601 formated date.
@@ -195,9 +189,15 @@ sub _check_iso8601 {
     }
 }
 
+=head2 BUILD
+
+If stop date is set this method chacks if stop date is older than start
+data. It also converts data to ISO 8601 format.
+
+=cut
+
 sub BUILD {
     my $self = shift;
-    my $timestamp;
 
     if ( $self->has_start_date && $self->has_start ) {
         croak
@@ -232,14 +232,17 @@ sub BUILD {
         }
     }
 
-    if (
-        DateTime->compare(
-            DateTime::Format::ISO8601->parse_datetime( $self->start ),
-            DateTime::Format::ISO8601->parse_datetime( $self->stop )
-        ) > 0
-      )
-    {
-        croak "End date has to be greater than start date.";
+    if ( $self->has_stop ) {
+        if (
+            DateTime->compare(
+                DateTime::Format::ISO8601->parse_datetime( $self->start ),
+                DateTime::Format::ISO8601->parse_datetime( $self->stop )
+            ) > 0
+          )
+        {
+            croak "End date has to be greater than start date.";
+        }
+
     }
 
 }

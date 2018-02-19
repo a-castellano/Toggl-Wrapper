@@ -76,7 +76,7 @@ sub constructor : Tests(12) {
         );
     }
     qr/End date has to be greater than start date. at constructor/,
-"Creating a $class without with start date older than stop date should fail.";
+      "Creating a $class with start date older than stop date should fail.";
 
     ok $class->new(
         start_date => DateTime->new(

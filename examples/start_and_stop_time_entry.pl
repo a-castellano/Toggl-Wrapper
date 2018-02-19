@@ -31,8 +31,13 @@ else {
 
 my $tggl = Toggl::Wrapper->new(%data);
 
-my $returned_data = $tggl->start_time_entry();
+my $started_entry = $tggl->start_time_entry();
 
-#my $started_entry = Toggl::Wrapper::TimeEntry->new($returned_data);
+my $id = $started_entry->id;
 
-print $returned_data->id;
+print "Entry id -> $id\n";
+print "Waiting 30 seconds...\n";
+
+sleep 3;
+
+$tggl->stop_time_entry($started_entry);

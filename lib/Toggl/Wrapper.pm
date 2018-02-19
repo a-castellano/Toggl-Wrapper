@@ -171,6 +171,11 @@ sub _make_api_call {
         $json_data = "{$json_data}";
         $request->content($json_data);
     }
+
+    if ( $call->{type} eq 'PUT' ) {
+        $request->content_length('0');
+    }
+
     my $response = $wrapper->request($request);
     if ( $response->is_success ) {
         $response = $response->decoded_content;
@@ -253,14 +258,14 @@ sub start_time_entry() {
 
     # Start time does not need duration, set negative one.
     $time_entry_data{duration}   = 0;
-    $time_entry_data{start_date} = DateTime->now;
+    $time_entry_data{start_date} = DateTime->now();
 
-    my $time_entry = Toggl::Wrapper::TimeEntry->new( \%time_entry_data );
+    my $time_entry = Toggl::Wrapper::TimeEntry->new(%time_entry_data);
 
     $response = _make_api_call(
         {
             type => 'POST',
-            url  => join( '', TOGGL_URL_V8, 'time_entries/start' ),
+            url  => join( '', ( TOGGL_URL_V8, 'time_entries/start' ) ),
             auth => {
                 api_token => $self->api_token,
             },
@@ -286,11 +291,13 @@ passed entry does not contain 'id' field.";
     $response = _make_api_call(
         {
             type => 'PUT',
-            url =>
-              join( TOGGL_URL_V8, "time_entries/", $time_entry->id(), "/stop" ),
+            url  => join( '',
+                ( TOGGL_URL_V8, "time_entries/", $time_entry->id(), "/stop" ) ),
             auth => {
                 api_token => $self->api_token,
             },
+            headers => [ { 'content-type' => 'application/json' } ],
+            data    => {},
         }
     );
     return $response;
