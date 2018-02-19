@@ -173,6 +173,7 @@ sub _make_api_call {
     }
     else {
         $request->content("");
+        $request->content_length('0');
     }
 
     my $response = $wrapper->request($request);
@@ -299,7 +300,7 @@ passed entry does not contain 'id' field.";
             data    => {},
         }
     );
-    return $response;
+    Toggl::Wrapper::TimeEntry->new( $response->{data} );
 }
 
 =head2 get_time_entry_details
@@ -312,17 +313,17 @@ sub get_time_entry_details() {
 
     $response = _make_api_call(
         {
-            type => 'POST',
+            type => 'GET',
             url =>
               join( '', ( TOGGL_URL_V8, "time_entries/", $time_entry_id ) ),
             auth => {
                 api_token => $self->api_token,
             },
-            headers => [ { 'content-type' => 'application/json' } ],
+            headers => [],
             data    => {},
         }
     );
-    return $response;
+    return Toggl::Wrapper::TimeEntry->new( $response->{data} );
 }
 
 =head1 AUTHOR
