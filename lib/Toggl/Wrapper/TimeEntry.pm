@@ -18,6 +18,7 @@ use MooseX::StrictConstructor;
 use MooseX::SemiAffordanceAccessor;
 use DateTime;
 use DateTime::Format::ISO8601;
+use Try::Tiny;
 use Carp qw(croak);
 
 with "Utils::Role::Serializable::JSON";
@@ -181,12 +182,13 @@ Returns True or False if given istring is a correct iso8601 formated date.
 
 sub _check_iso8601 {
     my ( $self, $date ) = @_;
-    if ( DateTime::Format::ISO8601->parse_datetime($date) ) {
+    try {
+        DateTime::Format::ISO8601->parse_datetime($date);
         return 1;
     }
-    else {
+    catch {
         return 0;
-    }
+    };
 }
 
 =head2 BUILD
