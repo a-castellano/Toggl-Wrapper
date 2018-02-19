@@ -22,6 +22,7 @@ use HTTP::Request;
 use HTTP::Response;
 use JSON::Parse ':all';
 use JSON;
+use Scalar::Util qw(looks_like_number);
 use Carp qw(croak);
 
 use Toggl::Wrapper::TimeEntry;
@@ -283,24 +284,13 @@ Stop given time entry.
 sub stop_time_entry() {
     my ( $self, $time_entry ) = @_;
     my $response;
+
     if ( !$time_entry->has_id ) {
         croak "Error:
 passed entry does not contain 'id' field.";
     }
 
-    $response = _make_api_call(
-        {
-            type => 'PUT',
-            url  => join( '',
-                ( TOGGL_URL_V8, "time_entries/", $time_entry->id(), "/stop" ) ),
-            auth => {
-                api_token => $self->api_token,
-            },
-            headers => [ { 'Content-Type' => 'application/json' } ],
-            data    => {},
-        }
-    );
-    Toggl::Wrapper::TimeEntry->new( $response->{data} );
+    return $self->stop_time_entry_by_id( $time_entry->id() );
 }
 
 =head2 get_time_entry_details
@@ -324,6 +314,33 @@ sub get_time_entry_details() {
         }
     );
     return Toggl::Wrapper::TimeEntry->new( $response->{data} );
+}
+
+=head2 stop_time_entry_by_id
+Stop time entries from a given entry id.
+=cut
+
+sub stop_time_entry_by_id() {
+    my ( $self, $time_entry_id ) = @_;
+    my $response;
+
+    if ( looks_like_number($time_entry_id) ) {
+        croak "TimeEntry id must be a number - $time_entry_id";
+    }
+
+    $response = _make_api_call(
+        {
+            type => 'PUT',
+            url  => join( '',
+                ( TOGGL_URL_V8, "time_entries/", $time_entry_id, "/stop" ) ),
+            auth => {
+                api_token => $self->api_token,
+            },
+            headers => [ { 'Content-Type' => 'application/json' } ],
+            data    => {},
+        }
+    );
+    Toggl::Wrapper::TimeEntry->new( $response->{data} );
 }
 
 =head1 AUTHOR
