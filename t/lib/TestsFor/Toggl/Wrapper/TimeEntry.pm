@@ -16,7 +16,7 @@ sub startup : Tests(startup) {
     my $class = $test->class_to_test;
 }
 
-sub constructor : Tests(12) {
+sub constructor : Tests(14) {
     my $test  = shift;
     my $class = $test->class_to_test;
 
@@ -39,12 +39,6 @@ sub constructor : Tests(12) {
     );
 
     can_ok $class, 'new';
-
-    #    throws_ok {
-    #    $class->new( created_with => "TestEntry.pm" );
-    #}
-    #qr/Attribute \(duration\) is required at constructor/,
-    #  "Creating a $class without 'duration' should fail.";
 
     ok $class->new(
         start_date   => $start_date,
@@ -190,7 +184,28 @@ qr/does not allow to be instanced with 'start_date' and 'start' at the same time
         );
     }
 qr/does not allow to be instanced with 'stop_date' and 'stop' at the same time. Only one of them is allowed/,
-"There is not posibe instance Timeentry with start and start_date attributes.";
+"There is not posibe to instance TimeEntry with start and start_date attributes.";
+
+    throws_ok {
+        $class->new(
+            start        => '2018-029-10T18:18:58Z',
+            duration     => 900,
+            created_with => "TestEntry.pm"
+        );
+    }
+    qr/Attibute 'start' format is not valid/,
+      "There is not posibe instance to TimeEntry with invalid start date.";
+
+    throws_ok {
+        $class->new(
+            start        => '2018-02-10T18:18:58Z',
+            stop         => '2018-029-10T18:18:58Z',
+            duration     => 900,
+            created_with => "TestEntry.pm"
+        );
+    }
+    qr/Attibute 'stop' format is not valid/,
+      "There is not posibe instance to TimeEntry with invalid stop date.";
 
     my $entry = $class->new(
         start_date => DateTime->new(
