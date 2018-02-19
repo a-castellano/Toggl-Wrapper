@@ -171,9 +171,8 @@ sub _make_api_call {
         $json_data = "{$json_data}";
         $request->content($json_data);
     }
-
-    if ( $call->{type} eq 'PUT' ) {
-        $request->content_length('0');
+    else {
+        $request->content("");
     }
 
     my $response = $wrapper->request($request);
