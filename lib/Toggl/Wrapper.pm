@@ -316,6 +316,7 @@ sub get_time_entry_details() {
     return Toggl::Wrapper::TimeEntry->new( $response->{data} );
 }
 
+
 =head2 stop_time_entry_by_id
 Stop time entries from a given entry id.
 =cut
@@ -341,6 +342,28 @@ sub stop_time_entry_by_id() {
         }
     );
     Toggl::Wrapper::TimeEntry->new( $response->{data} );
+}
+
+=head2 get_running_time_entry
+Get currently running time entry.
+=cut
+
+sub get_running_time_entry() {
+    my $self = shift;
+    my $response;
+
+    $response = _make_api_call(
+        {
+            type => 'GET',
+            url  => join( '', ( TOGGL_URL_V8, "time_entries/current" ) ),
+            auth => {
+                api_token => $self->api_token,
+            },
+            headers => [],
+            data    => {},
+        }
+    );
+    return Toggl::Wrapper::TimeEntry->new( $response->{data} );
 }
 
 =head1 AUTHOR
