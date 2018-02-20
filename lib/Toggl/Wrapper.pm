@@ -316,7 +316,6 @@ sub get_time_entry_details() {
     return Toggl::Wrapper::TimeEntry->new( $response->{data} );
 }
 
-
 =head2 stop_time_entry_by_id
 Stop time entries from a given entry id.
 =cut
@@ -325,8 +324,8 @@ sub stop_time_entry_by_id() {
     my ( $self, $time_entry_id ) = @_;
     my $response;
 
-    if ( looks_like_number($time_entry_id) ) {
-        croak "TimeEntry id must be a number - $time_entry_id";
+    if ( !( $time_entry_id =~ /^[+-]?\d+$/ ) ) {
+        croak "TimeEntry id must be a number.";
     }
 
     $response = _make_api_call(
