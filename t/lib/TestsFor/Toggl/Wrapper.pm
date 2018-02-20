@@ -211,7 +211,7 @@ sub start_entry : Tests(1) {
     ok $wrapper->start_time_entry(), "Start time_entry";
 }
 
-sub stop_entry : Tests(1) {
+sub stop_entry : Tests(4) {
     my $test  = shift;
     my $class = $test->class_to_test;
 
@@ -231,6 +231,42 @@ sub stop_entry : Tests(1) {
 
     my $time_entry = $wrapper->start_time_entry();
     ok $wrapper->stop_time_entry($time_entry), "Stop time entry.";
+
+    $time_entry = $wrapper->start_time_entry();
+    ok $wrapper->stop_time_entry_by_id(34567890), "Stop time entry.";
+
+    throws_ok { $wrapper->stop_time_entry_by_id("imnotanumber") }
+    qr/TimeEntry id must be a number/,
+      "Cannont stop a TimeEntry without a numeric id";
+
+    throws_ok {
+        $wrapper->stop_time_entry(
+            Toggl::Wrapper::TimeEntry->new(
+                start_date => DateTime->new(
+                    year      => '2018',
+                    month     => '3',
+                    day       => '8',
+                    hour      => '12',
+                    minute    => '0',
+                    time_zone => 'local'
+                ),
+                stop_date => DateTime->new(
+                    year      => '2018',
+                    month     => '3',
+                    day       => '8',
+                    hour      => '12',
+                    minute    => '15',
+                    time_zone => 'local'
+                ),
+
+                duration     => 900,
+                created_with => "TestEntry.pm"
+            )
+        );
+    }
+    qr/entry does not contain 'id' field/,
+      "Cannont stop a TimeEntry without id";
+
 }
 
 sub get_entry_details : Tests(1) {
