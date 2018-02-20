@@ -176,7 +176,6 @@ sub _make_api_call {
         $request->content("");
         $request->content_length('0');
     }
-
     my $response = $wrapper->request($request);
     if ( $response->is_success ) {
         $response = $response->decoded_content;
@@ -240,7 +239,7 @@ sub create_time_entry() {
                 api_token => $self->api_token,
             },
             headers => [ { 'Content-Type' => 'application/json' } ],
-            data => { time_entry => $time_entry->as_json() },
+            data => { time_entry => $time_entry },
         }
     );
     return $response;
@@ -316,6 +315,18 @@ sub get_time_entry_details() {
     return Toggl::Wrapper::TimeEntry->new( $response->{data} );
 }
 
+=head2 _check_timeentry_id_is_numeric
+Check if giiven TimeEntry id is numeric.
+=cut
+
+sub _check_id_is_numeric() {
+    my ( $self, $id_candidate ) = @_;
+
+    if ( !( $id_candidate =~ /^[+-]?\d+$/ ) ) {
+        croak "TimeEntry id must be a number.";
+    }
+}
+
 =head2 stop_time_entry_by_id
 Stop time entries from a given entry id.
 =cut
@@ -324,9 +335,7 @@ sub stop_time_entry_by_id() {
     my ( $self, $time_entry_id ) = @_;
     my $response;
 
-    if ( !( $time_entry_id =~ /^[+-]?\d+$/ ) ) {
-        croak "TimeEntry id must be a number.";
-    }
+    $self->_check_id_is_numeric($time_entry_id);
 
     $response = _make_api_call(
         {
@@ -373,9 +382,7 @@ sub update_time_entry_by_id() {
     my ( $self, $time_entry_id, $update_data ) = @_;
     my $response;
 
-    if ( !( $time_entry_id =~ /^[+-]?\d+$/ ) ) {
-        croak "TimeEntry id must be a number.";
-    }
+    $self->_check_id_is_numeric($time_entry_id);
 
     $response = _make_api_call(
         {
@@ -386,7 +393,7 @@ sub update_time_entry_by_id() {
                 api_token => $self->api_token,
             },
             headers => [ { 'Content-Type' => 'application/json' } ],
-            data    => {time_entry => $update_data},
+            data    => { time_entry => encode_json $update_data },
         }
     );
     return Toggl::Wrapper::TimeEntry->new( $response->{data} );

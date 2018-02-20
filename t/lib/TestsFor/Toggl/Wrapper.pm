@@ -336,7 +336,7 @@ sub update_time_entry : Tests(1) {
     my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
 
     my $return_json_example =
-'{"data":{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-14T12:00:00Z","duration":"-900"}}';
+'{"data":{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-14T12:00:00Z","duration":"-900","description":"Change description"}}';
 
     $mocked_http_response->mock(
         "decoded_content",
@@ -346,7 +346,7 @@ sub update_time_entry : Tests(1) {
     );
 
     my $json =
-'{"guid":null,"tid":null,"id":"798455036","duronly":false,"pid":null,"tags":null,"duration":"-900","start":"2018-02-14T12:00:00Z","at":null,"created_with":null,"stop":null,"billable":false,"description":null,"wid":"1364303"}';
+'{"guid":null,"tid":null,"id":"798455036","duronly":false,"pid":null,"tags":null,"duration":"-900","start":"2018-02-14T12:00:00Z","at":null,"created_with":null,"stop":null,"billable":false,"description":"Change description","wid":"1364303"}';
 
     my $time_entry = $wrapper->get_running_time_entry();
     my $updated_time_entry = $wrapper->update_time_entry($time_entry, {description => "Change description"});
