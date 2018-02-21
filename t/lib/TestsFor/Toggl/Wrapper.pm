@@ -151,19 +151,17 @@ sub failed_request : Tests(1) {
 
     my ( $mocked_lwp, $mocked_http_request, $mocked_http_response ) = mock();
 
-    $mocked_lwp->mock( 'is_success', sub { return 0;  }  );
+    $mocked_lwp->mock( 'is_success', sub { return 0; } );
 
     $mocked_lwp->mock(
         'request',
         sub {
-           return HTTP::Response->new( 400, 'Bad Request' );
+            return HTTP::Response->new( 400, 'Bad Request' );
         }
     );
 
     throws_ok {
-        $class->new(
-            api_token    => 'u1tra53cr3tt0k3n',
-        );
+        $class->new( api_token => 'u1tra53cr3tt0k3n', );
     }
     qr/An error ocurred: APP call returned 400: Bad Request/,
       "Creating $class with unespected return code should fail.";
@@ -373,15 +371,17 @@ sub update_time_entry : Tests(2) {
     my $json =
 '{"guid":null,"tid":null,"id":"798455036","duronly":false,"pid":null,"tags":null,"duration":"-900","start":"2018-02-14T12:00:00Z","at":null,"created_with":null,"stop":null,"billable":false,"description":"Change description","wid":"1364303"}';
 
-    my $time_entry = $wrapper->get_running_time_entry();
-    my $updated_time_entry = $wrapper->update_time_entry($time_entry, {description => "Change description"});
+    my $time_entry         = $wrapper->get_running_time_entry();
+    my $updated_time_entry = $wrapper->update_time_entry( $time_entry,
+        { description => "Change description" } );
     is_deeply(
         decode_json $updated_time_entry->as_json(),
         decode_json $json,
         "Wrapper is able to get time entries details."
     );
 
-    my $updated_time_entry = $wrapper->update_time_entry_by_id(798455036, {description => "Change description"});
+    $updated_time_entry = $wrapper->update_time_entry_by_id( 798455036,
+        { description => "Change description" } );
     is_deeply(
         decode_json $updated_time_entry->as_json(),
         decode_json $json,
@@ -390,6 +390,42 @@ sub update_time_entry : Tests(2) {
 
 }
 
+sub delete_time_entry : Tests(2) {
+    my $test  = shift;
+    my $class = $test->class_to_test;
+
+    my ( $mocked_lwp, $mocked_http_request, $mocked_http_response ) = mock();
+
+    my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
+
+    my $return_json_example =
+'{"data":{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-14T12:00:00Z","duration":"-900","description":"Change description"}}';
+
+    $mocked_http_response->mock(
+        "decoded_content",
+        sub {
+            return $return_json_example;
+        }
+    );
+
+    my $time_entry = Toggl::Wrapper::TimeEntry->new(
+        start_date => DateTime->new(
+            year      => '2018',
+            month     => '3',
+            day       => '8',
+            hour      => '12',
+            minute    => '0',
+            time_zone => 'local'
+        ),
+        id           => 34567890,
+        duration     => 900,
+        created_with => "TestEntry.pm"
+    );
+
+    ok $wrapper->delete_time_entry($time_entry), "Delete time entry.";
+    ok $wrapper->delete_time_entry_by_id( $time_entry->id() ),
+      "Delete time entry by id.";
+}
 
 sub mock {
 

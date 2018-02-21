@@ -238,8 +238,8 @@ sub create_time_entry() {
             auth => {
                 api_token => $self->api_token,
             },
-            headers => [ { 'Content-Type' => 'application/json' } ],
-            data => { time_entry => $time_entry },
+            headers => [            { 'Content-Type' => 'application/json' } ],
+            data    => { time_entry => $time_entry },
         }
     );
     return $response;
@@ -387,13 +387,13 @@ sub update_time_entry_by_id() {
     $response = _make_api_call(
         {
             type => 'PUT',
-            url  => join( '',
-                ( TOGGL_URL_V8, "time_entries/", $time_entry_id ) ),
+            url =>
+              join( '', ( TOGGL_URL_V8, "time_entries/", $time_entry_id ) ),
             auth => {
                 api_token => $self->api_token,
             },
             headers => [ { 'Content-Type' => 'application/json' } ],
-            data    => { time_entry => encode_json $update_data },
+            data => { time_entry => encode_json $update_data },
         }
     );
     return Toggl::Wrapper::TimeEntry->new( $response->{data} );
@@ -415,6 +415,46 @@ passed entry does not contain 'id' field.";
     return $self->stop_time_entry_by_id( $time_entry->id(), $update_data );
 }
 
+=head2 delete_time_entry_by_id
+Delete time entry using a given entry id.
+=cut
+
+sub delete_time_entry_by_id() {
+    my ( $self, $time_entry_id ) = @_;
+    my $response;
+
+    $self->_check_id_is_numeric($time_entry_id);
+
+    $response = _make_api_call(
+        {
+            type => 'DELETE',
+            url =>
+              join( '', ( TOGGL_URL_V8, "time_entries/", $time_entry_id ) ),
+            auth => {
+                api_token => $self->api_token,
+            },
+            headers => [],
+            data    => {},
+        }
+    );
+    return 1;
+}
+
+=head2 delete_time_entry
+Delete given time entry.
+=cut
+
+sub delete_time_entry() {
+    my ( $self, $time_entry ) = @_;
+    my $response;
+
+    if ( !$time_entry->has_id ) {
+        croak "Error:
+passed entry does not contain 'id' field.";
+    }
+
+    return $self->stop_time_entry_by_id( $time_entry->id() );
+}
 
 =head1 AUTHOR
 
