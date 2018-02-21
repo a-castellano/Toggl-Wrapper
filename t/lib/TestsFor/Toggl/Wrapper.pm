@@ -483,6 +483,189 @@ sub delete_time_entry : Tests(3) {
       "Cannont delete a TimeEntry without id";
 }
 
+sub get_time_entries : Tests(11) {
+    my $test  = shift;
+    my $class = $test->class_to_test;
+
+    my ( $mocked_lwp, $mocked_http_request, $mocked_http_response ) = mock();
+
+    my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
+
+    my $return_json_example =
+'{"data":{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-14T12:00:00Z","duration":"-900","description":"Change description"}}';
+
+    $mocked_http_response->mock(
+        "decoded_content",
+        sub {
+            return $return_json_example;
+        }
+    );
+
+    my $json =
+'{"guid":null,"tid":null,"id":"798455036","duronly":false,"pid":null,"tags":null,"duration":"-900","start":"2018-02-14T12:00:00Z","at":null,"created_with":null,"stop":null,"billable":false,"description":"Change description","wid":"1364303"}';
+
+    throws_ok {
+        $wrapper->get_time_entries('purenoise');
+    }
+qr/Invalid parameters supplied, specify start and stop dates or don't specify anithing/,
+      "Cannont get entries without start and stop dates";
+
+    throws_ok {
+        $wrapper->get_time_entries( start => '2018-02-14T12:00:00Z' );
+    }
+    qr/Invalid parameters supplied, stop date is not supplied/,
+      "Cannont get entries without stop date";
+
+    throws_ok {
+        $wrapper->get_time_entries(
+            start => DateTime->new(
+                year      => '2018',
+                month     => '3',
+                day       => '8',
+                hour      => '12',
+                minute    => '0',
+                time_zone => 'local'
+            )
+        );
+    }
+    qr/Invalid parameters supplied, stop date is not supplied/,
+      "Cannont get entries without stop date, datetime";
+
+    throws_ok {
+        $wrapper->get_time_entries( stop => '2018-02-14T12:00:00Z' );
+    }
+    qr/Invalid parameters supplied, start date is not supplied/,
+      "Cannont get entries without start date";
+
+    throws_ok {
+        $wrapper->get_time_entries(
+            stop => DateTime->new(
+                year      => '2018',
+                month     => '3',
+                day       => '8',
+                hour      => '12',
+                minute    => '0',
+                time_zone => 'local'
+            )
+        );
+    }
+    qr/Invalid parameters supplied, start date is not supplied/,
+      "Cannont get entries without start date, datatime";
+
+    throws_ok {
+        $wrapper->get_time_entries(
+            start => '2018-02-14T12:00:00Z',
+            stop  => '2018-01-14T12:00:00Z'
+        );
+    }
+qr/Invalid parameters supplied, stop date cannot be eairlier than start date/,
+      "Cannont get entries with stop date newer than start one";
+
+    throws_ok {
+        $wrapper->get_time_entries(
+            stop => DateTime->new(
+                year      => '2018',
+                month     => '2',
+                day       => '8',
+                hour      => '12',
+                minute    => '0',
+                time_zone => 'local'
+            ),
+            start => DateTime->new(
+                year      => '2018',
+                month     => '3',
+                day       => '8',
+                hour      => '12',
+                minute    => '0',
+                time_zone => 'local'
+            ),
+        );
+    }
+    qr/Invalid parameters supplied, start date is not supplied/,
+      "Cannont get entries with stop date newer than start one, datetime";
+
+    throws_ok {
+        $wrapper->get_time_entries(
+            stop  => '2018-02-14T12:00:00Z',
+            start => DateTime->new(
+                year      => '2018',
+                month     => '3',
+                day       => '8',
+                hour      => '12',
+                minute    => '0',
+                time_zone => 'local'
+            ),
+        );
+    }
+    qr/Invalid parameters supplied, start date is not supplied/,
+      "Cannont get entries with stop date newer than start one, mixed";
+
+    my @expected_array = (
+        Toggl::Wrapper::TimeEntry->new(
+            start => DateTime->new(
+                year      => '2018',
+                month     => '3',
+                day       => '8',
+                hour      => '12',
+                minute    => '0',
+                time_zone => 'local'
+            ),
+            duration     => 900,
+            description  => "Doing something",
+            created_with => "TestEntry.pm",
+        ),
+        Toggl::Wrapper::TimeEntry->new(
+            stop => DateTime->new(
+                year      => '2018',
+                month     => '3',
+                day       => '8',
+                hour      => '14',
+                minute    => '0',
+                time_zone => 'local'
+            ),
+            duration     => 900,
+            description  => "Doing something more",
+            created_with => "TestEntry.pm",
+        ),
+    );
+
+    is_deeply( $wrapper->get_time_entries(),
+        @expected_array, "Wrapper is able to get time entries details." );
+
+    is_deeply(
+        $wrapper->get_time_entries(
+            start => '2018-02-14T12:00:00Z',
+            stop  => '2018-04-14T12:00:00Z'
+        ),
+        @expected_array,
+"Wrapper is able to get time entries details sepecifying start and stop date."
+    );
+
+    is_deeply(
+        $wrapper->get_time_entries(
+            start => DateTime->new(
+                year      => '2018',
+                month     => '2',
+                day       => '8',
+                hour      => '14',
+                minute    => '0',
+                time_zone => 'local'
+            ),
+            stop => DateTime->new(
+                year      => '2018',
+                month     => '3',
+                day       => '8',
+                hour      => '14',
+                minute    => '0',
+                time_zone => 'local'
+            )
+        ),
+        @expected_array,
+"Wrapper is able to get time entries details sepecifying start and stop date. Datatime"
+    );
+
+}
+
 sub mock {
 
     # mock LWP::UserAgent
