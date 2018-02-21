@@ -456,6 +456,36 @@ passed entry does not contain 'id' field.";
     return $self->stop_time_entry_by_id( $time_entry->id() );
 }
 
+=head2 get_time_entries
+Return a list of time entries occurred between two dates. If no dates
+are supplied, API returns time entries started during the last 9 days.
+
+'start' and 'stop' parameters can be supplied as datetime objects or
+iso8091 strings.
+=cut
+
+sub get_time_entries() {
+    my ( $self, $date_range ) = @_;
+
+    if ( !undef($date_range) ) {
+
+        if ( ref($date_range) ne "ARRAY" ) {
+            croak
+"Error: Invalid parameters supplied, specify start and stop dates or don't specify anithing.";
+        }
+
+        if ( !exists $date_range->{start} ) {
+            croak
+              "Error: Invalid parameters supplied, start date is not supplied.";
+        }
+        if ( !exists $date_range->{stop} ) {
+            croak
+              "Error: Invalid parameters supplied, stop date is not supplied.";
+        }
+
+    }
+}
+
 =head1 AUTHOR
 
 Álvaro Castellano Vela, C<< <alvaro.castellano.vela at gmail.com> >>
