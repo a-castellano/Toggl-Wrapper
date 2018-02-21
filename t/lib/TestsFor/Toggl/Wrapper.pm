@@ -145,6 +145,31 @@ qr/a $class with no user or password neither api_token. You can only create an i
 
 }
 
+sub failed_request : Tests(1) {
+    my $test  = shift;
+    my $class = $test->class_to_test;
+
+    my ( $mocked_lwp, $mocked_http_request, $mocked_http_response ) = mock();
+
+    $mocked_lwp->mock( 'is_success', sub { return 0;  }  );
+
+    $mocked_lwp->mock(
+        'request',
+        sub {
+           return HTTP::Response->new( 400, 'Bad Request' );
+        }
+    );
+
+    throws_ok {
+        $class->new(
+            api_token    => 'u1tra53cr3tt0k3n',
+        );
+    }
+    qr/An error ocurred: APP call returned 400: Bad Request/,
+      "Creating $class with unespected return code should fail.";
+
+}
+
 sub create_entry : Tests(3) {
     my $test  = shift;
     my $class = $test->class_to_test;
@@ -327,7 +352,7 @@ sub get_running_time_entry : Tests(1) {
     );
 }
 
-sub update_time_entry : Tests(1) {
+sub update_time_entry : Tests(2) {
     my $test  = shift;
     my $class = $test->class_to_test;
 
@@ -355,6 +380,14 @@ sub update_time_entry : Tests(1) {
         decode_json $json,
         "Wrapper is able to get time entries details."
     );
+
+    my $updated_time_entry = $wrapper->update_time_entry_by_id(798455036, {description => "Change description"});
+    is_deeply(
+        decode_json $updated_time_entry->as_json(),
+        decode_json $json,
+        "Wrapper is able to get time entries details."
+    );
+
 }
 
 
