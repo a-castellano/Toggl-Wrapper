@@ -492,7 +492,7 @@ sub get_time_entries : Tests(13) {
     my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
 
     my $return_json_example =
-'{"data":[{"id":"798455036","wid":"1364303","billable":0,"start":"2018-03-08T12:00:00Z","duration":"900","description":"Doing something","created_with":"TestEntry.pm"},{"id":"798455037","wid":"1364303","billable":0,"start":"2018-03-08T14:00:00Z","duration":"900","description":"Doing something more","created_with":"TestEntry.pm"}]}';
+'[{"id":"798455036","wid":"1364303","billable":0,"start":"2018-03-08T12:00:00Z","duration":"900","description":"Doing something","created_with":"TestEntry.pm"},{"id":"798455037","wid":"1364303","billable":0,"start":"2018-03-08T14:00:00Z","duration":"900","description":"Doing something more","created_with":"TestEntry.pm"}]';
 
     $mocked_http_response->mock(
         "decoded_content",
