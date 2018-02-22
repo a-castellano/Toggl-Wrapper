@@ -21,6 +21,7 @@ use DateTime::Format::ISO8601;
 use Try::Tiny;
 use Carp qw(croak);
 
+use Utils::Common qw(check_iso8601);
 with "Utils::Role::Serializable::JSON";
 use namespace::autoclean;
 
@@ -175,22 +176,6 @@ has 'uid' => (
 
 =head1 SUBROUTINES/METHODS
 
-=head2 _check_iso8601
-Returns True or False if given istring is a correct iso8601 formated date.
-
-=cut
-
-sub _check_iso8601 {
-    my ( $self, $date ) = @_;
-    try {
-        DateTime::Format::ISO8601->parse_datetime($date);
-        return 1;
-    }
-    catch {
-        return 0;
-    };
-}
-
 =head2 BUILD
 
 If stop date is set this method chacks if stop date is older than start
@@ -220,7 +205,7 @@ sub BUILD {
         $self->set_start( $self->start_date->iso8601() . 'Z' );
     }
     else {
-        if ( !$self->_check_iso8601( $self->start ) ) {
+        if ( !check_iso8601( $self->start ) ) {
             croak "Attibute 'start' format is not valid.";
         }
     }
@@ -229,7 +214,7 @@ sub BUILD {
         $self->set_stop( $self->stop_date->iso8601() . 'Z' );
     }
     elsif ( $self->has_stop ) {
-        if ( !$self->_check_iso8601( $self->stop ) ) {
+        if ( !check_iso8601( $self->stop ) ) {
             croak "Attibute 'stop' format is not valid.";
         }
     }

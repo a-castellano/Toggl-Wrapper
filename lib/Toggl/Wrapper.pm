@@ -24,8 +24,10 @@ use JSON::Parse ':all';
 use JSON;
 use Scalar::Util qw(looks_like_number);
 use Carp qw(croak);
+use Try::Tiny;
 
 use Toggl::Wrapper::TimeEntry;
+use Utils::Common qw(check_iso8601);
 use Data::Dumper;
 
 use namespace::autoclean;
@@ -430,9 +432,7 @@ sub delete_time_entry_by_id() {
             type => 'DELETE',
             url =>
               join( '', ( TOGGL_URL_V8, "time_entries/", $time_entry_id ) ),
-            auth => {
-                api_token => $self->api_token,
-            },
+            auth    => { api_token => $self->api_token },
             headers => [],
             data    => {},
         }
@@ -467,9 +467,17 @@ iso8091 strings.
 sub get_time_entries() {
     my ( $self, $date_range ) = @_;
 
-    if ( !undef($date_range) ) {
+    my $start = '';
+    my $stop  = '';
 
-        if ( ref($date_range) ne "ARRAY" ) {
+    my $data = '';
+    my $response;
+
+    my $entries;
+    my @time_entries;
+
+    if ($date_range) {
+        if ( ref $date_range ne 'HASH' ) {
             croak
 "Error: Invalid parameters supplied, specify start and stop dates or don't specify anithing.";
         }
@@ -483,7 +491,55 @@ sub get_time_entries() {
               "Error: Invalid parameters supplied, stop date is not supplied.";
         }
 
+        if ( ref $date_range->{start} eq "DateTime" ) {
+            $start = $date_range->{start}->iso8601() . 'Z';
+        }
+        else {
+            $start = $date_range->{start};
+            if ( !check_iso8601($start) ) {
+                croak "Attibute 'start' format is not valid.";
+            }
+        }
+
+        if ( ref $date_range->{stop} eq "DateTime" ) {
+            $stop = $date_range->{stop}->iso8601() . 'Z';
+        }
+        else {
+            $stop = $date_range->{stop};
+            if ( !check_iso8601($stop) ) {
+                croak "Attibute 'stop' format is not valid.";
+            }
+        }
+
+        if (
+            DateTime->compare(
+                DateTime::Format::ISO8601->parse_datetime($start),
+                DateTime::Format::ISO8601->parse_datetime($stop)
+            ) > 0
+          )
+        {
+            croak
+"Error: Invalid parameters supplied, stop date cannot be eairlier than start date.";
+        }
+
+        $data = "?start_date=$start&stop_date=$stop";
     }
+
+    $response = _make_api_call(
+        {
+            type => 'GET',
+            url  => join( '', ( TOGGL_URL_V8, "time_entries", $data ) ),
+            auth => {
+                api_token => $self->api_token,
+            },
+            headers => [],
+            data    => {},
+        }
+    );
+
+    map { push( @time_entries, Toggl::Wrapper::TimeEntry->new($_) ) }
+      @{ $response->{data} };
+    return \@time_entries;
 }
 
 =head1 AUTHOR
