@@ -538,7 +538,7 @@ sub get_time_entries() {
     );
 
     map { push( @time_entries, Toggl::Wrapper::TimeEntry->new($_) ) }
-      @{ $response->{data} };
+      @{$response};
     return \@time_entries;
 }
 
