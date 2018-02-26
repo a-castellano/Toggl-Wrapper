@@ -3,6 +3,7 @@
 =encoding UTF-8
 
 =head1 NAME
+
 Toggl-Wrapper
 
 =for html <a href="https://travis-ci.org/a-castellano/Toggl-Wrapper"><img src="https://travis-ci.org/a-castellano/Toggl-Wrapper.svg?branch=master"></a>

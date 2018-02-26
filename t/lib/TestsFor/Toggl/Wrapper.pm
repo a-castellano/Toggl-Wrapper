@@ -715,6 +715,12 @@ sub bulk_update_time_entries_tags : Tests(13) {
     );
 
     throws_ok {
+        $wrapper->bulk_update_time_entries_tags();
+    }
+qr/Invalid parameters supplied, specify an array of time entry ID's, an array of tags, and the action/,
+      "Cannont uptate entries without parametters";
+
+    throws_ok {
         $wrapper->bulk_update_time_entries_tags('noise');
     }
 qr/Invalid parameters supplied, specify an array of time entry ID's, an array of tags, and the action/,
@@ -750,7 +756,7 @@ qr/Invalid parameters supplied, specify an array of time entry ID's, an array of
         $wrapper->bulk_update_time_entries_tags(
             { time_entry_ids => [ 43324, 78974 ], } );
     }
-    qr/Invalid parameters supplied, 'tags' is not defined/,
+    qr/Invalid parameters supplied, 'tags' array is not defined/,
       "Cannont uptate entries with no tags defined";
 
     throws_ok {
@@ -791,7 +797,7 @@ qr/Invalid parameters supplied, specify an array of time entry ID's, an array of
             {
                 time_entry_ids => [ 43324,  78974 ],
                 tags           => [ "some", "tags" ],
-                tag_action     => 123,
+                tag_action     => [123],
             }
         );
     }

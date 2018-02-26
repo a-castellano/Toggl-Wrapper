@@ -542,6 +542,89 @@ sub get_time_entries() {
     return \@time_entries;
 }
 
+=head2 bulk_update_time_entries_tags
+Update a list of time entries adding or removing provided tags.
+
+The following parametters are required:
+
+time_entry_ids => An array containing time entry ID's.
+tags => An array of tags to be added or removed.
+tag_action => 'add' or 'remove'.
+=cut
+
+sub bulk_update_time_entries_tags() {
+
+    my ( $self, $parameters ) = @_;
+
+    my %data;
+    my $ids;
+    my $response;
+
+    my $entries;
+    my @time_entries;
+
+    if ( !$parameters ) {
+        croak
+"Invalid parameters supplied, specify an array of time entry ID's, an array of tags, and the action.";
+    }
+
+    if ( ref $parameters ne 'HASH' ) {
+        croak
+"Invalid parameters supplied, specify an array of time entry ID's, an array of tags, and the action.";
+    }
+
+    foreach my $parameter (qw/time_entry_ids tags/) {
+
+        if ( !exists $parameters->{$parameter} ) {
+            croak
+              "Invalid parameters supplied, '$parameter' array is not defined.";
+        }
+
+        if ( ref $parameters->{$parameter} ne "ARRAY" ) {
+            croak
+"Invalid parameters supplied, '$parameter' must be an array of ID's.";
+        }
+
+        if ( !scalar @{ $parameters->{$parameter} } ) {
+            croak "Invalid parameters supplied, '$parameter' is empty.";
+        }
+
+        if ( !exists $parameters->{$parameter} ) {
+            croak "Invalid parameters supplied, '$parameter' is not defined.";
+        }
+    }
+
+    if ( !exists $parameters->{tag_action} ) {
+        croak "Invalid parameters supplied, 'tag_action' is not defined.";
+    }
+
+    if (   $parameters->{tag_action} ne "add"
+        or $parameters->{tag_action} ne "remove" )
+    {
+        croak
+"Invalid parameters supplied, 'tag_action' must be a string containing 'add' or 'remove' values";
+    }
+
+    $ids = join( ',', $parameters->{time_entry_ids} );
+
+    $response = _make_api_call(
+        {
+            type => 'PUT',
+            url  => join( '', ( TOGGL_URL_V8, "time_entries", $ids ) ),
+            auth => {
+                api_token => $self->api_token,
+            },
+            headers => [],
+            data    => { time_entry => encode_json %data },
+        }
+    );
+
+    map { push( @time_entries, Toggl::Wrapper::TimeEntry->new($_) ) }
+      @{$response};
+    return \@time_entries;
+    return 1;
+}
+
 =head1 AUTHOR
 
 Álvaro Castellano Vela, C<< <alvaro.castellano.vela at gmail.com> >>
