@@ -705,7 +705,7 @@ sub bulk_update_time_entries_tags : Tests(14) {
     my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
 
     my $return_json_example =
-'[{"id":"798455036","wid":"1364303","billable":0,"start":"2018-03-08T12:00:00Z","duration":"900","description":"Doing something","created_with":"TestEntry.pm","tags":["tagtest1", "some", "tags"]},{"id":"798455037","wid":"1364303","billable":0,"start":"2018-03-08T14:00:00Z","duration":"900","description":"Doing something more","created_with":"TestEntry.pm","tags":["tagtest2", "some", "tags"]}]';
+'{"data":[{"id":"798455036","wid":"1364303","billable":0,"start":"2018-03-08T12:00:00Z","duration":"900","description":"Doing something","created_with":"TestEntry.pm","tags":["tagtest1", "some", "tags"]},{"id":"798455037","wid":"1364303","billable":0,"start":"2018-03-08T14:00:00Z","duration":"900","description":"Doing something more","created_with":"TestEntry.pm","tags":["tagtest2", "some", "tags"]}]}';
 
     $mocked_http_response->mock(
         "decoded_content",
@@ -871,7 +871,7 @@ qr/Invalid parameters supplied, 'tag_action' must be a string containing 'add' o
     );
 
     $return_json_example =
-'[{"id":"798455036","wid":"1364303","billable":0,"start":"2018-03-08T12:00:00Z","duration":"900","description":"Doing something","created_with":"TestEntry.pm","tags":["tagtest1"]},{"id":"798455037","wid":"1364303","billable":0,"start":"2018-03-08T14:00:00Z","duration":"900","description":"Doing something more","created_with":"TestEntry.pm","tags":["tagtest2"]}]';
+'{"data":[{"id":"798455036","wid":"1364303","billable":0,"start":"2018-03-08T12:00:00Z","duration":"900","description":"Doing something","created_with":"TestEntry.pm","tags":["tagtest1"]},{"id":"798455037","wid":"1364303","billable":0,"start":"2018-03-08T14:00:00Z","duration":"900","description":"Doing something more","created_with":"TestEntry.pm","tags":["tagtest2"]}]}';
 
     $mocked_http_response->mock(
         "decoded_content",
