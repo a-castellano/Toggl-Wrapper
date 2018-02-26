@@ -592,14 +592,17 @@ sub bulk_update_time_entries_tags() {
         if ( !exists $parameters->{$parameter} ) {
             croak "Invalid parameters supplied, '$parameter' is not defined.";
         }
+
+        $data{$parameter} = $parameters->{$parameter}
+
     }
 
     if ( !exists $parameters->{tag_action} ) {
         croak "Invalid parameters supplied, 'tag_action' is not defined.";
     }
 
-    if (   $parameters->{tag_action} ne "add"
-        or $parameters->{tag_action} ne "remove" )
+    if (    $parameters->{tag_action} ne "add"
+        and $parameters->{tag_action} ne "remove" )
     {
         croak
 "Invalid parameters supplied, 'tag_action' must be a string containing 'add' or 'remove' values";
@@ -615,7 +618,7 @@ sub bulk_update_time_entries_tags() {
                 api_token => $self->api_token,
             },
             headers => [],
-            data    => { time_entry => encode_json %data },
+            data    => { time_entry => %data },
         }
     );
 
