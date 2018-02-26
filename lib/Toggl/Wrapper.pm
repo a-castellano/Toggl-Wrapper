@@ -589,10 +589,6 @@ sub bulk_update_time_entries_tags() {
             croak "Invalid parameters supplied, '$parameter' is empty.";
         }
 
-        if ( !exists $parameters->{$parameter} ) {
-            croak "Invalid parameters supplied, '$parameter' is not defined.";
-        }
-
         $data{$parameter} = $parameters->{$parameter}
 
     }
