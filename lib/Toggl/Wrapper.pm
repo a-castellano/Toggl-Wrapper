@@ -604,24 +604,23 @@ sub bulk_update_time_entries_tags() {
 "Invalid parameters supplied, 'tag_action' must be a string containing 'add' or 'remove' values";
     }
 
-    $ids = join( ',', $parameters->{time_entry_ids} );
+    $ids = join( ',', @{ $parameters->{time_entry_ids} } );
 
     $response = _make_api_call(
         {
             type => 'PUT',
-            url  => join( '', ( TOGGL_URL_V8, "time_entries", $ids ) ),
+            url  => join( '', ( TOGGL_URL_V8, "time_entries/", $ids ) ),
             auth => {
                 api_token => $self->api_token,
             },
             headers => [],
-            data    => { time_entry => %data },
+            data    => { time_entry => encode_json \%data },
         }
     );
 
     map { push( @time_entries, Toggl::Wrapper::TimeEntry->new($_) ) }
-      @{$response};
+      @{ $response->{data} };
     return \@time_entries;
-    return 1;
 }
 
 =head1 AUTHOR
