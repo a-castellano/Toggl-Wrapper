@@ -487,6 +487,8 @@ sub get_time_entries : Tests(13) {
     my $test  = shift;
     my $class = $test->class_to_test;
 
+    my @expected_array;
+
     my ( $mocked_lwp, $mocked_http_request, $mocked_http_response ) = mock();
 
     my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
@@ -632,7 +634,7 @@ qr/Invalid parameters supplied, stop date cannot be eairlier than start date./,
 qr/Invalid parameters supplied, stop date cannot be eairlier than start date/,
       "Cannont get entries with stop date newer than start one, mixed";
 
-    my @expected_array = (
+    @expected_array = (
         Toggl::Wrapper::TimeEntry->new(
             start        => '2018-03-08T12:00:00Z',
             id           => 798455036,
@@ -688,6 +690,190 @@ qr/Invalid parameters supplied, stop date cannot be eairlier than start date/,
         ),
         \@expected_array,
 "Wrapper is able to get time entries details sepecifying start and stop date. Datatime"
+    );
+
+}
+
+sub bulk_update_time_entries_tags : Tests(13) {
+    my $test  = shift;
+    my $class = $test->class_to_test;
+
+    my @expected_array;
+
+    my ( $mocked_lwp, $mocked_http_request, $mocked_http_response ) = mock();
+
+    my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
+
+    my $return_json_example =
+'[{"id":"798455036","wid":"1364303","billable":0,"start":"2018-03-08T12:00:00Z","duration":"900","description":"Doing something","created_with":"TestEntry.pm","tags":["tagtest1"]},{"id":"798455037","wid":"1364303","billable":0,"start":"2018-03-08T14:00:00Z","duration":"900","description":"Doing something more","created_with":"TestEntry.pm","tags":["tagtest2"]}]';
+
+    $mocked_http_response->mock(
+        "decoded_content",
+        sub {
+            return $return_json_example;
+        }
+    );
+
+    throws_ok {
+        $wrapper->bulk_update_time_entries_tags('noise');
+    }
+qr/Invalid parameters supplied, specify an array of time entry ID's, an array of tags, and the action/,
+      "Cannont uptate entries without right parametters";
+
+    throws_ok {
+        $wrapper->bulk_update_time_entries_tags( {} );
+    }
+    qr/Invalid parameters supplied, 'time_entry_ids' array is not defined/,
+      "Cannont uptate entries without time_entry_ids";
+
+    throws_ok {
+        $wrapper->bulk_update_time_entries_tags(
+            { time_entry_ids => 'noise', } );
+    }
+    qr/Invalid parameters supplied, 'time_entry_ids' must be an array of ID's/,
+      "Cannont uptate entries with time_entry_ids not being an array";
+
+    throws_ok {
+        $wrapper->bulk_update_time_entries_tags(
+            { time_entry_ids => 'noise', } );
+    }
+    qr/Invalid parameters supplied, 'time_entry_ids' must be an array of ID's/,
+      "Cannont uptate entries with time_entry_ids not being an array";
+
+    throws_ok {
+        $wrapper->bulk_update_time_entries_tags( { time_entry_ids => [], } );
+    }
+    qr/Invalid parameters supplied, 'time_entry_ids' is empty/,
+      "Cannont uptate entries with empty time_entry_ids array";
+
+    throws_ok {
+        $wrapper->bulk_update_time_entries_tags(
+            { time_entry_ids => [ 43324, 78974 ], } );
+    }
+    qr/Invalid parameters supplied, 'tags' is not defined/,
+      "Cannont uptate entries with no tags defined";
+
+    throws_ok {
+        $wrapper->bulk_update_time_entries_tags(
+            {
+                time_entry_ids => [ 43324, 78974 ],
+                tags           => 'noise'
+            }
+        );
+    }
+    qr/Invalid parameters supplied, 'tags' must be an array/,
+      "Cannont uptate entries with tags not being an array";
+
+    throws_ok {
+        $wrapper->bulk_update_time_entries_tags(
+            {
+                time_entry_ids => [ 43324, 78974 ],
+                tags           => []
+            }
+        );
+    }
+    qr/Invalid parameters supplied, 'tags' is empty/,
+      "Cannont uptate entries with empty array of tags";
+
+    throws_ok {
+        $wrapper->bulk_update_time_entries_tags(
+            {
+                time_entry_ids => [ 43324,  78974 ],
+                tags           => [ "some", "tags" ]
+            }
+        );
+    }
+    qr/Invalid parameters supplied, 'tag_action' is not defined/,
+      "Cannont uptate entries with no tag_action defined";
+
+    throws_ok {
+        $wrapper->bulk_update_time_entries_tags(
+            {
+                time_entry_ids => [ 43324,  78974 ],
+                tags           => [ "some", "tags" ],
+                tag_action     => 123,
+            }
+        );
+    }
+    qr/Invalid parameters supplied, 'tag_action' must be a string/,
+      "Cannont uptate entries with tag_action not being an string";
+
+    throws_ok {
+        $wrapper->bulk_update_time_entries_tags(
+            {
+                time_entry_ids => [ 43324,  78974 ],
+                tags           => [ "some", "tags" ],
+                tag_action     => "noise",
+            }
+        );
+    }
+qr/Invalid parameters supplied, 'tag_action' must be a string containing 'add' or 'remove' values/,
+      "Cannont uptate entries with tag_action not being an string";
+
+    @expected_array = (
+        Toggl::Wrapper::TimeEntry->new(
+            start        => '2018-03-08T12:00:00Z',
+            id           => 798455036,
+            wid          => 1364303,
+            duration     => 900,
+            description  => "Doing something",
+            created_with => "TestEntry.pm",
+            tags         => [ "some", "tags" ],
+        ),
+        Toggl::Wrapper::TimeEntry->new(
+            start        => '2018-03-08T14:00:00Z',
+            id           => 798455037,
+            wid          => 1364303,
+            duration     => 900,
+            description  => "Doing something more",
+            created_with => "TestEntry.pm",
+            tags         => [ "some", "tags" ],
+        )
+    );
+
+    is_deeply(
+        $wrapper->bulk_update_time_entries_tags(
+            {
+                time_entry_ids => [ 43324,  78974 ],
+                tags           => [ "some", "tags" ],
+                tag_action     => "add",
+            }
+        ),
+        \@expected_array,
+        "Wrapper is able to add tags."
+    );
+
+    @expected_array = (
+        Toggl::Wrapper::TimeEntry->new(
+            start        => '2018-03-08T12:00:00Z',
+            id           => 798455036,
+            wid          => 1364303,
+            duration     => 900,
+            description  => "Doing something",
+            created_with => "TestEntry.pm",
+            tags         => [],
+        ),
+        Toggl::Wrapper::TimeEntry->new(
+            start        => '2018-03-08T14:00:00Z',
+            id           => 798455037,
+            wid          => 1364303,
+            duration     => 900,
+            description  => "Doing something more",
+            created_with => "TestEntry.pm",
+            tags         => [],
+        )
+    );
+
+    is_deeply(
+        $wrapper->bulk_update_time_entries_tags(
+            {
+                time_entry_ids => [ 43324,  78974 ],
+                tags           => [ "some", "tags" ],
+                tag_action     => "remove",
+            }
+        ),
+        \@expected_array,
+        "Wrapper is able to remove tags."
     );
 
 }
