@@ -244,7 +244,7 @@ sub create_time_entry() {
             data => { time_entry => $time_entry->as_json() },
         }
     );
-    return $response;
+    return Toggl::Wrapper::TimeEntry->new( %{ $response->{data} } );
 }
 
 =head2 start_time_entry

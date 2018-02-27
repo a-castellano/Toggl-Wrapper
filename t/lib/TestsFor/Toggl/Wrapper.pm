@@ -185,7 +185,7 @@ qr/TimeEntry does not allow to be instanced without 'start_date' or 'start'/,
       "Calling create_time_entry with no start_date attribute should fail.";
 
     my $return_json_example =
-'{"data":{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-13T12:00:00Z","stop":"2018-02-13T13:00:00Z","duration":"900","duronly":0,"at":"2018-02-14T05:01:00+00:00","uid":2143391}}';
+'{"data":{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-13T12:00:00Z","duration":900,"uid":2143391, "tags":[], "duronly":0}}';
 
     $mocked_http_response->mock(
         "decoded_content",
@@ -195,8 +195,9 @@ qr/TimeEntry does not allow to be instanced without 'start_date' or 'start'/,
     );
 
     my $returned_data = $wrapper->create_time_entry(
-        duration   => 900,
-        start_date => DateTime->new(
+        duration    => 900,
+        description => "Test entry",
+        start_date  => DateTime->new(
             year      => '2018',
             month     => '2',
             day       => '13',
@@ -205,9 +206,13 @@ qr/TimeEntry does not allow to be instanced without 'start_date' or 'start'/,
             time_zone => 'local',
         ),
     );
+
+    my $json =
+'{"guid":null,"tid":null,"id":"798455036","duronly":false,"pid":null,"tags":[],"duration":"900","start":"2018-02-13T12:00:00Z","at":null,"created_with":null,"stop":null,"billable":false,"description":null,"wid":"1364303"}';
+
     is_deeply(
-        decode_json encode_json($returned_data),
-        decode_json $return_json_example,
+        decode_json $returned_data->as_json(),
+        decode_json $json,
         "Wrapper is able to create time entries."
     );
 

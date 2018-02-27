@@ -43,8 +43,9 @@ ok $class->new( api_token => $toggl_api_token ),
 my $wrapper = Toggl::Wrapper->new( api_token => $toggl_api_token );
 
 my $time_entry = $wrapper->create_time_entry(
-    duration   => 900,
-    start_date => DateTime->new(
+    duration    => 900,
+    description => "Test entry",
+    start_date  => DateTime->new(
         year      => '2018',
         month     => '2',
         day       => '13',
@@ -54,7 +55,10 @@ my $time_entry = $wrapper->create_time_entry(
     ),
 );
 
-is( $time_entry->duration,    900, "Time entry is created, duration" );
-is( $time_entry->description, "",  "Time entry is created, description" );
+is( $time_entry->duration, 900, "Time entry is created, duration" );
+is( $time_entry->description, "Test entry",
+    "Time entry is created, description" );
+
+my $time_entry_id = $time_entry->id;
 
 diag("Testing Toggl::Wrapper $Toggl::Wrapper::VERSION, Perl $], $^X");
