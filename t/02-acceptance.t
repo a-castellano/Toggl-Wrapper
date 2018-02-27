@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use DateTime;
 
-use Test::More tests => 9;
+use Test::More tests => 15;
 use Test::Most;
 
 our $class = 'Toggl::Wrapper';
@@ -59,6 +59,35 @@ is( $time_entry->duration, 900, "Time entry is created, duration" );
 is( $time_entry->description, "Test entry",
     "Time entry is created, description" );
 
-my $time_entry_id = $time_entry->id;
+my $updated_time_entry = $wrapper->update_time_entry( $time_entry,
+    { description => "Change description" } );
+
+is(
+    $updated_time_entry->description,
+    "Change description",
+    "Time entry description is updated"
+);
+
+ok $wrapper->delete_time_entry($time_entry), qr/Delete created time entry./;
+
+$time_entry = $wrapper->start_time_entry( description => "Started test entry" );
+
+is(
+    $time_entry->description,
+    "Started test entry",
+    "Started time entry description is set"
+);
+
+sleep 10;
+
+my $details = $wrapper->get_time_entry_details( $time_entry->id );
+is(
+    $details->description,
+    "Started test entry",
+    "Get time entry description as detail"
+);
+
+ok $wrapper->stop_time_entry($time_entry),   qr/Stop started time entry./;
+ok $wrapper->delete_time_entry($time_entry), qr/Delete stopped time entry./;
 
 diag("Testing Toggl::Wrapper $Toggl::Wrapper::VERSION, Perl $], $^X");

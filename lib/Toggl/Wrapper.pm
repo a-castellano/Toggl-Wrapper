@@ -414,7 +414,7 @@ sub update_time_entry() {
 passed entry does not contain 'id' field.";
     }
 
-    return $self->stop_time_entry_by_id( $time_entry->id(), $update_data );
+    return $self->update_time_entry_by_id( $time_entry->id(), $update_data );
 }
 
 =head2 delete_time_entry_by_id
@@ -431,7 +431,7 @@ sub delete_time_entry_by_id() {
         {
             type => 'DELETE',
             url =>
-              join( '', ( TOGGL_URL_V8, "time_entries/", $time_entry_id ) ),
+              join( '', ( TOGGL_URL_V8, "time_entries/", "$time_entry_id" ) ),
             auth    => { api_token => $self->api_token },
             headers => [],
             data    => {},
@@ -452,8 +452,7 @@ sub delete_time_entry() {
         croak "Error:
 passed entry does not contain 'id' field.";
     }
-
-    return $self->stop_time_entry_by_id( $time_entry->id() );
+    return $self->delete_time_entry_by_id( $time_entry->id() );
 }
 
 =head2 get_time_entries
