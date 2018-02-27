@@ -1,7 +1,9 @@
 #!perl -T
 use strict;
 use warnings;
-use Test::More tests => 7;
+use DateTime;
+
+use Test::More tests => 9;
 use Test::Most;
 
 our $class = 'Toggl::Wrapper';
@@ -37,5 +39,22 @@ ok $class->new( email => $toggl_email, password => $toggl_password ),
 
 ok $class->new( api_token => $toggl_api_token ),
   qr/With right token, constructor works/;
+
+my $wrapper = Toggl::Wrapper->new( api_token => $toggl_api_token );
+
+my $time_entry = $wrapper->create_time_entry(
+    duration   => 900,
+    start_date => DateTime->new(
+        year      => '2018',
+        month     => '2',
+        day       => '13',
+        hour      => '18',
+        minute    => '0',
+        time_zone => 'local',
+    ),
+);
+
+is( $time_entry->duration,    900, "Time entry is created, duration" );
+is( $time_entry->description, "",  "Time entry is created, description" );
 
 diag("Testing Toggl::Wrapper $Toggl::Wrapper::VERSION, Perl $], $^X");

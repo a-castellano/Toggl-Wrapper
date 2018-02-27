@@ -240,8 +240,8 @@ sub create_time_entry() {
             auth => {
                 api_token => $self->api_token,
             },
-            headers => [            { 'Content-Type' => 'application/json' } ],
-            data    => { time_entry => $time_entry },
+            headers => [ { 'Content-Type' => 'application/json' } ],
+            data => { time_entry => $time_entry->as_json() },
         }
     );
     return $response;
