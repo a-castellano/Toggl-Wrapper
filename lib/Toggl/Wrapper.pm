@@ -189,10 +189,10 @@ sub _make_api_call {
         my $code    = $r->code;
         my $message = $r->message;
         if ( $code == 403 ) {
-            croak "Check your credentaials: APP call returned $code: $message";
+            croak "Check your credentaials: API call returned $code: $message";
         }
         else {
-            croak "An error ocurred: APP call returned $code: $message";
+            croak "An error ocurred: API call returned $code: $message";
         }
     }
 }

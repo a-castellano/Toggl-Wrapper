@@ -36,7 +36,7 @@ sub wrong_or_right_data_constructor : Tests(15) {
     my ( $mocked_lwp, $mocked_http_request, $mocked_http_response ) = mock();
 
     throws_ok { $class->new( api_token => "wr0ngtt0k3n" ) }
-    qr/Check your credentaials: APP call returned 403: Forbidden/,
+    qr/Check your credentaials: API call returned 403: Forbidden/,
       "Creating $class without proper attributes should fail.";
 
     ok $class->new( api_token => "u1tra53cr3tt0k3n" ),
@@ -113,7 +113,7 @@ qr/$class instance with and api_token and user\/password. You can only create an
             password => "myU1tra53cr3tPa55wd",
         );
     }
-    qr/Check your credentaials: APP call returned 403: Forbidden/,
+    qr/Check your credentaials: API call returned 403: Forbidden/,
       "Creating $class with wrong email should fail.";
 
     throws_ok {
@@ -122,7 +122,7 @@ qr/$class instance with and api_token and user\/password. You can only create an
             password => "somepassword",
         );
     }
-    qr/Check your credentaials: APP call returned 403: Forbidden/,
+    qr/Check your credentaials: API call returned 403: Forbidden/,
       "Creating $class with wrong password should fail.";
 
     ok $class->new(
@@ -163,7 +163,7 @@ sub failed_request : Tests(1) {
     throws_ok {
         $class->new( api_token => 'u1tra53cr3tt0k3n', );
     }
-    qr/An error ocurred: APP call returned 400: Bad Request/,
+    qr/An error ocurred: API call returned 400: Bad Request/,
       "Creating $class with unespected return code should fail.";
 
 }
