@@ -32,10 +32,16 @@ else {
 my $tggl = Toggl::Wrapper->new(%data);
 
 #die Dumper $tggl->get_time_entries();
-die Dumper $tggl->get_time_entries(
-    {
-        start => '2018-02-22T00:00:00Z',
-        stop  => '2018-02-23T00:00:00Z'
-    }
-);
+my @entries = @{
+    $tggl->get_time_entries(
+        {
+            start => DateTime->today(),
+            stop  => DateTime->today()->add( days => 1 )
+        }
+    )
+};
+
+my $arrSize = @entries;
+
+#die $arrSize;
 

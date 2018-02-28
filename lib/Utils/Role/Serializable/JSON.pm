@@ -10,13 +10,11 @@ sub as_json {
     my $self = shift;
     my %object = map { $_ => $self->$_ } $self->serializable_attributes;
     foreach my $bool_attribute ( $self->boolean_atributes ) {
-        if ( exists $object{$bool_attribute} ) {
-            if ( $object{$bool_attribute} ) {
-                $object{$bool_attribute} = JSON::true();
-            }
-            else {
-                $object{$bool_attribute} = JSON::false();
-            }
+        if ( $object{$bool_attribute} ) {
+            $object{$bool_attribute} = JSON::true();
+        }
+        else {
+            $object{$bool_attribute} = JSON::false();
         }
     }
     return encode_json( \%object );

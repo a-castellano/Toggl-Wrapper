@@ -189,10 +189,10 @@ sub _make_api_call {
         my $code    = $r->code;
         my $message = $r->message;
         if ( $code == 403 ) {
-            croak "Check your credentaials: APP call returned $code: $message";
+            croak "Check your credentaials: API call returned $code: $message";
         }
         else {
-            croak "An error ocurred: APP call returned $code: $message";
+            croak "An error ocurred: API call returned $code: $message";
         }
     }
 }
@@ -240,11 +240,11 @@ sub create_time_entry() {
             auth => {
                 api_token => $self->api_token,
             },
-            headers => [            { 'Content-Type' => 'application/json' } ],
-            data    => { time_entry => $time_entry },
+            headers => [ { 'Content-Type' => 'application/json' } ],
+            data => { time_entry => $time_entry->as_json() },
         }
     );
-    return $response;
+    return Toggl::Wrapper::TimeEntry->new( %{ $response->{data} } );
 }
 
 =head2 start_time_entry
@@ -414,7 +414,7 @@ sub update_time_entry() {
 passed entry does not contain 'id' field.";
     }
 
-    return $self->stop_time_entry_by_id( $time_entry->id(), $update_data );
+    return $self->update_time_entry_by_id( $time_entry->id(), $update_data );
 }
 
 =head2 delete_time_entry_by_id
@@ -431,7 +431,7 @@ sub delete_time_entry_by_id() {
         {
             type => 'DELETE',
             url =>
-              join( '', ( TOGGL_URL_V8, "time_entries/", $time_entry_id ) ),
+              join( '', ( TOGGL_URL_V8, "time_entries/", "$time_entry_id" ) ),
             auth    => { api_token => $self->api_token },
             headers => [],
             data    => {},
@@ -452,8 +452,7 @@ sub delete_time_entry() {
         croak "Error:
 passed entry does not contain 'id' field.";
     }
-
-    return $self->stop_time_entry_by_id( $time_entry->id() );
+    return $self->delete_time_entry_by_id( $time_entry->id() );
 }
 
 =head2 get_time_entries
@@ -474,7 +473,7 @@ sub get_time_entries() {
     my $response;
 
     my $entries;
-    my @time_entries;
+    my @time_entries = ();
 
     if ($date_range) {
         if ( ref $date_range ne 'HASH' ) {
