@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use DateTime;
 
-use Test::More tests => 28;
+use Test::More tests => 27;
 use Test::Most;
 
 our $class = 'Toggl::Wrapper';
@@ -47,15 +47,14 @@ ok $class->new( api_token => $toggl_api_token ),
 my $wrapper = Toggl::Wrapper->new( api_token => $toggl_api_token );
 
 #Clean
-ok my @entries = @{
+my @entries = @{
     $wrapper->get_time_entries(
         {
             start => DateTime->today(),
             stop  => DateTime->today()->add( days => 1 )
         }
     )
-  },
-  qr/get time entries./;
+};
 
 for my $entry (@entries) {
     $wrapper->delete_time_entry($entry), qr/Delete stopped time entry./;

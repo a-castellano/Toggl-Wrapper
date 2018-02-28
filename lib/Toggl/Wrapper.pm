@@ -473,7 +473,7 @@ sub get_time_entries() {
     my $response;
 
     my $entries;
-    my @time_entries;
+    my @time_entries = ();
 
     if ($date_range) {
         if ( ref $date_range ne 'HASH' ) {

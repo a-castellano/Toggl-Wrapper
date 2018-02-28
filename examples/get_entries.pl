@@ -43,5 +43,5 @@ my @entries = @{
 
 my $arrSize = @entries;
 
-die $arrSize;
+#die $arrSize;
 
