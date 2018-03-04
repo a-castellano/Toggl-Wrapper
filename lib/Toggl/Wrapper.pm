@@ -521,7 +521,7 @@ sub get_time_entries() {
 "Error: Invalid parameters supplied, stop date cannot be eairlier than start date.";
         }
 
-        $data = "?start_date=$start&stop_date=$stop";
+        $data = "?start_date=$start&end_date=$stop";
     }
 
     $response = _make_api_call(
