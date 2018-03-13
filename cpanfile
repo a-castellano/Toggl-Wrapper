@@ -11,7 +11,7 @@ requires 'HTTP::Status', 6.13;
 requires 'JSON', 2.97001;
 requires 'JSON::Parse', 0.55;
 requires 'JSON::XS', 3.03;
-requires 'LWP', ;
+requires 'LWP', 6.29;
 requires 'LWP::MemberMixin', 6.29;
 requires 'LWP::Protocol', 6.29;
 requires 'LWP::UserAgent', 6.29;
