@@ -21,13 +21,45 @@ This module aims to intereact with toggl.com API. For the time being,
 this module allows users to authenticate using user/password pair or an
 api token instead.
 
+=head1 DEPENDENCIES
+
+You should be able to download all the requeriments using cpanm.
+Place yourself on the root of this project
+
+    cpanm --quiet --installdeps --notest .
+
+Author recommends to install packages instead of installing al dependencies with cpanm.
+
+=head2 Ubuntu packages
+
+    libdatetime-format-iso8601-perl
+    libemail-abstract-perl
+    libnet-http-perl
+    libjson-types-perl
+    libcpanel-json-xs-perl
+    libio-all-lwp-perl
+    libmoose-perl
+    libmoosex-semiaffordanceaccessor-perl
+    libmoosex-strictconstructor-perl
+    libmoosex-types-common-perl
+    libconfig-json-perl
+    libjson-any-perl
+    libjson-perl
+    libdate-calc-perl
+    libboolean-perl
+
+Nevertheleess you will have to install the following libraries using cpanm.
+
+    MooseX::Types::Email
+    JSON::Parse
+
 =head1 INSTALLATION
 
 To install this module, run the following commands:
 
 	perl Makefile.PL
 	make
-	make test
+	make test -> optionally
 	make install
 
 =head1 SUPPORT AND DOCUMENTATION
