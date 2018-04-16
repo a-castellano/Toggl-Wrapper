@@ -197,11 +197,12 @@ $wrapper->stop_time_entry($untagged_entry);
 ok $wrapper->bulk_update_time_entries_tags(
     {
         time_entry_ids => [ $untagged_entry->id ],
-        tags           => [ "test_tag" ],
+        tags           => ["test_tag"],
         tag_action     => "add",
     }
   ),
   qr/Bulk update only one time entry/;
 
+$wrapper->delete_time_entry($untagged_entry);
 
 diag("Testing Toggl::Wrapper $Toggl::Wrapper::VERSION, Perl $], $^X");
