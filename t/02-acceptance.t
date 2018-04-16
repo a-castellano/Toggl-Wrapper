@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use DateTime;
 
-use Test::More tests => 27;
+use Test::More tests => 28;
 use Test::Most;
 
 our $class = 'Toggl::Wrapper';
@@ -189,5 +189,19 @@ is_deeply( $third->tags, [ "some", "tags" ], "Third still has some tags" );
 for my $entry (@entries) {
     $wrapper->delete_time_entry($entry), qr/Delete stopped time entry./;
 }
+
+my $untagged_entry = $wrapper->start_time_entry( description => "Untagged" );
+sleep 10;
+$wrapper->stop_time_entry($untagged_entry);
+
+ok $wrapper->bulk_update_time_entries_tags(
+    {
+        time_entry_ids => [ $untagged_entry->id ],
+        tags           => [ "test_tag" ],
+        tag_action     => "add",
+    }
+  ),
+  qr/Bulk update only one time entry/;
+
 
 diag("Testing Toggl::Wrapper $Toggl::Wrapper::VERSION, Perl $], $^X");
