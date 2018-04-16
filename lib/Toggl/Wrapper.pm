@@ -562,6 +562,8 @@ sub bulk_update_time_entries_tags() {
     my $entries;
     my @time_entries;
 
+    my @response_data;
+
     if ( !$parameters ) {
         croak
 "Invalid parameters supplied, specify an array of time entry ID's, an array of tags, and the action.";
@@ -617,8 +619,15 @@ sub bulk_update_time_entries_tags() {
         }
     );
 
+    if ( ref( $response->{data} ) eq 'HASH' ) {
+        @response_data = @{ [ $response->{data} ] };
+    }
+    else {
+        @response_data = @{ $response->{data} };
+    }
+
     map { push( @time_entries, Toggl::Wrapper::TimeEntry->new($_) ) }
-      @{ $response->{data} };
+      @response_data;
     return \@time_entries;
 }
 
