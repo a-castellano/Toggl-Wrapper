@@ -9,7 +9,7 @@ tests:
   before_script:
     - apt-get update
     - apt-get -y install libdatetime-format-iso8601-perl libemail-abstract-perl libnet-http-perl libjson-types-perl libcpanel-json-xs-perl libio-all-lwp-perl libmoose-perl libmoosex-semiaffordanceaccessor-perl libmoosex-strictconstructor-perl libmoosex-types-common-perl libconfig-json-perl libjson-any-perl libjson-perl libdate-calc-perl libboolean-perl libmoosex-types-email-perl libjson-parse-perl
-    - apt-get install -y libtest-more-utf8-perl libtest-class-perl libtest-mockmodule-perl make cpanminus libppi-perl libtest-most-perl
+    - apt-get install -y libtest-more-utf8-perl libtest-class-perl libtest-mockmodule-perl make cpanminus libppi-perl libtest-most-perl libextutils-installpaths-perl libmodule-build-tiny-perl libclass-accessor-class-perl libclass-accessor-lite-perl libtest-fatal-perl
     - cpanm Devel::Mutator
     - perl Makefile.PL
     - make
