@@ -38,11 +38,11 @@ https://github.com/a-castellano/Toggl-Wrapper";
 
 =head1 VERSION
 
-  Version 0.02
+  Version 0.2
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '0.2';
 
 has 'api_token' => (
     is        => 'ro',
