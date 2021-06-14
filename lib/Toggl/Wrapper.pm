@@ -32,17 +32,17 @@ use Data::Dumper;
 
 use namespace::autoclean;
 
-use constant TOGGL_URL_V8 => "https://www.toggl.com/api/v8/";
+use constant TOGGL_URL_V8 => "https://api.track.toggl.com/api/v8/";
 use constant USER_AGENT   => "Toggl::Wrapper
 https://github.com/a-castellano/Toggl-Wrapper";
 
 =head1 VERSION
 
-  Version 0.01
+  Version 0.2
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.2';
 
 has 'api_token' => (
     is        => 'ro',

@@ -13,7 +13,7 @@ Toggl-Wrapper
 
 =head1 VERSION
 
-version 0.1
+version 0.2
 
 =head1 SYNOPSIS
 
@@ -31,27 +31,7 @@ Place yourself on the root of this project
 Author recommends to install packages instead of installing al dependencies with cpanm.
 
 =head2 Ubuntu packages
-
-    libdatetime-format-iso8601-perl
-    libemail-abstract-perl
-    libnet-http-perl
-    libjson-types-perl
-    libcpanel-json-xs-perl
-    libio-all-lwp-perl
-    libmoose-perl
-    libmoosex-semiaffordanceaccessor-perl
-    libmoosex-strictconstructor-perl
-    libmoosex-types-common-perl
-    libconfig-json-perl
-    libjson-any-perl
-    libjson-perl
-    libdate-calc-perl
-    libboolean-perl
-
-Nevertheleess you will have to install the following libraries using cpanm.
-
-    MooseX::Types::Email
-    JSON::Parse
+    apt-get install libdatetime-format-iso8601-perl libemail-abstract-perl libnet-http-perl libjson-types-perl libcpanel-json-xs-perl libio-all-lwp-perl libmoose-perl libmoosex-semiaffordanceaccessor-perl libmoosex-strictconstructor-perl libmoosex-types-common-perl libconfig-json-perl libjson-any-perl libjson-perl libdate-calc-perl libboolean-perl libmoosex-types-email-perl libjson-parse-perl
 
 =head1 INSTALLATION
 
