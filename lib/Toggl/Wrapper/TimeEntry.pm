@@ -27,11 +27,11 @@ use namespace::autoclean;
 
 =head1 VERSION
 
-  Version 0.02
+  Version 0.2
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '0.2';
 
 =head1 SYNOPSIS
 

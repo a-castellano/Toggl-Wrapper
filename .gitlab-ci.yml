@@ -4,6 +4,7 @@ stages:
     - test
     - coverage
     - build
+    - repo
 
 
 tests:
@@ -64,3 +65,15 @@ package:
     - dpkg-buildpackage -uc -b
     - mkdir build
     - mv ../*.deb build/
+
+upload_package_to_repo:
+  stage: repo
+  image: registry.windmaker.net:5005/a-castellano/limani/base_curl:202104052102
+  script:
+    - SNAPSHOTDATE=$(date +%G%m%d%k%M%S)
+    - PACKAGE=$(ls build)
+    - curl -X POST -F file=@package/$PACKAGE http://packages.windmaker.net:8000/api/files/libtoggl-wrapper-perl || exit 1
+    - curl -X POST http://packages.windmaker.net:8000/api/repos/packages-windmaker-focal-testing/file/libtoggl-wrapper-perl || exit 1
+    - "curl -X PUT -H 'Content-Type: application/json' http://packages.windmaker.net:8000/api/publish/:./focal --data '{}' || exit 1"
+  dependencies:
+    - package
