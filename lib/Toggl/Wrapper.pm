@@ -33,8 +33,7 @@ use Data::Dumper;
 use namespace::autoclean;
 
 use constant TOGGL_URL_V9 => "https://api.track.toggl.com/api/v9/";
-use constant USER_AGENT   => "Toggl::Wrapper
-https://github.com/a-castellano/Toggl-Wrapper";
+use constant USER_AGENT   => "https://github.com/a-castellano/Toggl-Wrapper";
 
 =head1 VERSION
 
@@ -126,6 +125,7 @@ sub BUILD {
         }
     );
 
+    print(Dumper($response));
         $self->_set_api_token( $response->{api_token} );
         $self->_set_email( $response->{email} );
         $self->_set_user_data($response);
@@ -177,6 +177,7 @@ sub _make_api_call {
         $request->content_length('0');
     }
     my $response = $wrapper->request($request);
+    print(Dumper($response));
     if ( $response->is_success ) {
         $response = $response->decoded_content;
         my $json = parse_json($response);
@@ -200,7 +201,7 @@ Manage Toggl time entries.
 =cut
 
 =head2 _set_required_default_time_entry_values
-Sets TimeEntry 'wid' if there is no one defined.
+Sets TimeEntry 'workspace_id' if there is no one defined.
 It also sets created_with attribute.
 =cut
 
@@ -209,9 +210,9 @@ sub _set_required_default_time_entry_values() {
 
     my $response;
 
-    # If there is no wid defined, Wrapper will use default one
-    if ( !$time_entry_data->{wid} ) {
-        $time_entry_data->{wid} = $self->_user_data->{default_wid};
+    # If there is no workspace_id defined, Wrapper will use default one
+    if ( !$time_entry_data->{workspace_id} ) {
+        $time_entry_data->{workspace_id} = $self->_user_data->{default_workspace_id};
     }
 
     # Set created_with
@@ -226,21 +227,28 @@ Creates and publishes a new time entry.
 sub create_time_entry() {
     my ( $self, %time_entry_data ) = @_;
 
+
     $self->_set_required_default_time_entry_values( \%time_entry_data );
 
     my $response;
 
     my $time_entry = Toggl::Wrapper::TimeEntry->new( \%time_entry_data );
 
+my %data_to_send;
+$data_to_send{start}="\"".$time_entry->start."\"";
+$data_to_send{duration}=$time_entry->duration;
+$data_to_send{created_with}="\"".$time_entry->created_with."\"";
+$data_to_send{wid}=$time_entry->workspace_id;
+
     $response = _make_api_call(
         {
             type => 'POST',
-            url  => TOGGL_URL_V9 . 'time_entries',
+            url  => TOGGL_URL_V9 . 'workspaces/' . $time_entry->{workspace_id} . '/time_entries',
             auth => {
                 api_token => $self->api_token,
             },
             headers => [ { 'Content-Type' => 'application/json' } ],
-            data => { time_entry => $time_entry->as_json() },
+            data => \%data_to_send,
         }
     );
     return Toggl::Wrapper::TimeEntry->new( %{ $response->{data} } );
