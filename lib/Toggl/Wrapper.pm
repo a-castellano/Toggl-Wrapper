@@ -32,17 +32,17 @@ use Data::Dumper;
 
 use namespace::autoclean;
 
-use constant TOGGL_URL_V8 => "https://api.track.toggl.com/api/v8/";
+use constant TOGGL_URL_V9 => "https://api.track.toggl.com/api/v9/";
 use constant USER_AGENT   => "Toggl::Wrapper
 https://github.com/a-castellano/Toggl-Wrapper";
 
 =head1 VERSION
 
-  Version 0.2
+  Version 0.3
 
 =cut
 
-our $VERSION = '0.2';
+our $VERSION = '0.3';
 
 has 'api_token' => (
     is        => 'ro',
@@ -119,7 +119,7 @@ sub BUILD {
     $response = _make_api_call(
         {
             type    => 'GET',
-            url     => TOGGL_URL_V8 . 'me',
+            url     => TOGGL_URL_V9 . 'me',
             auth    => \%auth,
             headers => [],
             data    => {},
@@ -236,7 +236,7 @@ sub create_time_entry() {
     $response = _make_api_call(
         {
             type => 'POST',
-            url  => TOGGL_URL_V8 . 'time_entries',
+            url  => TOGGL_URL_V9 . 'time_entries',
             auth => {
                 api_token => $self->api_token,
             },
@@ -267,7 +267,7 @@ sub start_time_entry() {
     $response = _make_api_call(
         {
             type => 'POST',
-            url  => join( '', ( TOGGL_URL_V8, 'time_entries/start' ) ),
+            url  => join( '', ( TOGGL_URL_V9, 'time_entries/start' ) ),
             auth => {
                 api_token => $self->api_token,
             },
@@ -306,7 +306,7 @@ sub get_time_entry_details() {
         {
             type => 'GET',
             url =>
-              join( '', ( TOGGL_URL_V8, "time_entries/", $time_entry_id ) ),
+              join( '', ( TOGGL_URL_V9, "time_entries/", $time_entry_id ) ),
             auth => {
                 api_token => $self->api_token,
             },
@@ -343,7 +343,7 @@ sub stop_time_entry_by_id() {
         {
             type => 'PUT',
             url  => join( '',
-                ( TOGGL_URL_V8, "time_entries/", $time_entry_id, "/stop" ) ),
+                ( TOGGL_URL_V9, "time_entries/", $time_entry_id, "/stop" ) ),
             auth => {
                 api_token => $self->api_token,
             },
@@ -365,7 +365,7 @@ sub get_running_time_entry() {
     $response = _make_api_call(
         {
             type => 'GET',
-            url  => join( '', ( TOGGL_URL_V8, "time_entries/current" ) ),
+            url  => join( '', ( TOGGL_URL_V9, "time_entries/current" ) ),
             auth => {
                 api_token => $self->api_token,
             },
@@ -390,7 +390,7 @@ sub update_time_entry_by_id() {
         {
             type => 'PUT',
             url =>
-              join( '', ( TOGGL_URL_V8, "time_entries/", $time_entry_id ) ),
+              join( '', ( TOGGL_URL_V9, "time_entries/", $time_entry_id ) ),
             auth => {
                 api_token => $self->api_token,
             },
@@ -431,7 +431,7 @@ sub delete_time_entry_by_id() {
         {
             type => 'DELETE',
             url =>
-              join( '', ( TOGGL_URL_V8, "time_entries/", "$time_entry_id" ) ),
+              join( '', ( TOGGL_URL_V9, "time_entries/", "$time_entry_id" ) ),
             auth    => { api_token => $self->api_token },
             headers => [],
             data    => {},
@@ -527,7 +527,7 @@ sub get_time_entries() {
     $response = _make_api_call(
         {
             type => 'GET',
-            url  => join( '', ( TOGGL_URL_V8, "time_entries", $data ) ),
+            url  => join( '', ( TOGGL_URL_V9, "time_entries", $data ) ),
             auth => {
                 api_token => $self->api_token,
             },
@@ -610,7 +610,7 @@ sub bulk_update_time_entries_tags() {
     $response = _make_api_call(
         {
             type => 'PUT',
-            url  => join( '', ( TOGGL_URL_V8, "time_entries/", $ids ) ),
+            url  => join( '', ( TOGGL_URL_V9, "time_entries/", $ids ) ),
             auth => {
                 api_token => $self->api_token,
             },
