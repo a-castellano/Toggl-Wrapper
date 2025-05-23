@@ -1,4 +1,4 @@
-image: registry.windmaker.net:5005/a-castellano/limani/base:202104052102
+image: registry.windmaker.net:5005/a-castellano/limani/base
 
 stages:
   - test
@@ -6,12 +6,11 @@ stages:
   - build
   - repo
 
-
 tests:
   stage: test
   before_script:
     - export TZ=Europe/Madrid
-    - ln -snf /usr/share/zoneinfo/$TZ /etc/localtime 
+    - ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
     - echo $TZ > /etc/timezone
     - apt-get update
     - apt-get -y install libdatetime-format-iso8601-perl libemail-abstract-perl libnet-http-perl libjson-types-perl libcpanel-json-xs-perl libio-all-lwp-perl libmoose-perl libmoosex-semiaffordanceaccessor-perl libmoosex-strictconstructor-perl libmoosex-types-common-perl libconfig-json-perl libjson-any-perl libjson-perl libdate-calc-perl libboolean-perl libmoosex-types-email-perl libjson-parse-perl
@@ -29,7 +28,7 @@ coverage:
   stage: coverage
   before_script:
     - export TZ=Europe/Madrid
-    - ln -snf /usr/share/zoneinfo/$TZ /etc/localtime 
+    - ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
     - echo $TZ > /etc/timezone
     - apt-get update
     - apt-get -y install libdatetime-format-iso8601-perl libemail-abstract-perl libnet-http-perl libjson-types-perl libcpanel-json-xs-perl libio-all-lwp-perl libmoose-perl libmoosex-semiaffordanceaccessor-perl libmoosex-strictconstructor-perl libmoosex-types-common-perl libconfig-json-perl libjson-any-perl libjson-perl libdate-calc-perl libboolean-perl libmoosex-types-email-perl libjson-parse-perl
@@ -52,7 +51,7 @@ package:
       - build/*
   before_script:
     - export TZ=Europe/Madrid
-    - ln -snf /usr/share/zoneinfo/$TZ /etc/localtime 
+    - ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
     - echo $TZ > /etc/timezone
     - apt-get update
     - apt-get install -y dh-make-perl dpkg-dev
