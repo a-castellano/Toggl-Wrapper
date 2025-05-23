@@ -93,10 +93,10 @@ sub BUILD {
     my $self = shift;
 
     my $response;
-    my $response_data;
     my %auth;
 
     if ( $self->has_api_token ) {
+
         if ( $self->has_email || $self->has_password ) {
             croak
 "Trying to create a Toggl::Wrapper instance with and api_token and user/password. You can only create an instance with an api key or email/password, not both.\n";
@@ -126,11 +126,9 @@ sub BUILD {
         }
     );
 
-    $response_data = $response->{data};
-
-    $self->_set_api_token( $response_data->{api_token} );
-    $self->_set_email( $response_data->{email} );
-    $self->_set_user_data($response_data);
+        $self->_set_api_token( $response->{api_token} );
+        $self->_set_email( $response->{email} );
+        $self->_set_user_data($response);
 
 }
 
@@ -231,6 +229,7 @@ sub create_time_entry() {
     $self->_set_required_default_time_entry_values( \%time_entry_data );
 
     my $response;
+
     my $time_entry = Toggl::Wrapper::TimeEntry->new( \%time_entry_data );
 
     $response = _make_api_call(
