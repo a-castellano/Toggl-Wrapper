@@ -21,7 +21,7 @@ use LWP::UserAgent;
 use HTTP::Request;
 use HTTP::Response;
 use JSON::Parse ':all';
-use JSON;
+use JSON::MaybeXS qw(encode_json decode_json);
 use Scalar::Util qw(looks_like_number);
 use Carp qw(croak);
 use Try::Tiny;
@@ -165,8 +165,31 @@ sub _make_api_call {
 
     # Data
     if (%$data) {
-        foreach my $key ( keys %$data ) {
-            $json_data = "$json_data \"$key\":$data->{$key},";
+      my %hash_data = %$data;
+      print("DENTRO\n");
+print(Dumper(keys %hash_data));
+        foreach my $key ( keys %hash_data ) {
+          print($key);
+print("\n");
+}
+      print("\nDENTRO\n");
+
+        foreach my $key ( keys %hash_data ) {
+          if ($hash_data{$key}){
+          if (looks_like_number( $hash_data{$key} )) {
+            $json_data = "$json_data \"$key\":$hash_data{$key},";
+          }
+            else {
+              if ($key eq 'start'){
+              $json_data = "$json_data \"$key\":\"2025-05-27T22:00:00-00:00\",";
+              }
+              else{
+              $json_data = "$json_data \"$key\":\"$hash_data{$key}\",";
+            }
+            }
+            print($json_data);
+            print("\n");
+        }
         }
         $json_data = substr( $json_data, 0, -1 );
         $json_data = "{$json_data}";
@@ -210,9 +233,9 @@ sub _set_required_default_time_entry_values() {
 
     my $response;
 
-    # If there is no workspace_id defined, Wrapper will use default one
-    if ( !$time_entry_data->{workspace_id} ) {
-        $time_entry_data->{workspace_id} = $self->_user_data->{default_workspace_id};
+    # If there is no wid defined, Wrapper will use default one
+    if ( !$time_entry_data->{wid} ) {
+        $time_entry_data->{wid} = $self->_user_data->{default_workspace_id};
     }
 
     # Set created_with
@@ -234,21 +257,25 @@ sub create_time_entry() {
 
     my $time_entry = Toggl::Wrapper::TimeEntry->new( \%time_entry_data );
 
+    my $time_entry_string = $time_entry->as_json();
+    print(Dumper($time_entry_string));
+    my $time_entry_hash = decode_json($time_entry_string);
+
 my %data_to_send;
 $data_to_send{start}="\"".$time_entry->start."\"";
 $data_to_send{duration}=$time_entry->duration;
 $data_to_send{created_with}="\"".$time_entry->created_with."\"";
-$data_to_send{wid}=$time_entry->workspace_id;
+$data_to_send{wid}=$time_entry->wid;
 
     $response = _make_api_call(
         {
             type => 'POST',
-            url  => TOGGL_URL_V9 . 'workspaces/' . $time_entry->{workspace_id} . '/time_entries',
+            url  => TOGGL_URL_V9 . 'workspaces/' . $time_entry->{wid} . '/time_entries',
             auth => {
                 api_token => $self->api_token,
             },
             headers => [ { 'Content-Type' => 'application/json' } ],
-            data => \%data_to_send,
+            data => $time_entry_hash,
         }
     );
     return Toggl::Wrapper::TimeEntry->new( %{ $response->{data} } );

@@ -45,7 +45,7 @@ This module manages Toggl time entries.
 =head1 Properties
 
 description: (string, strongly suggested to be used)
-workspace_id: workspace ID (integer, required if pid or tid not supplied)
+wid: workspace ID (integer, required if pid or tid not supplied)
 pid: project ID (integer, not required)
 tid: task ID (integer, not required)
 billable: (boolean, not required, default false, available for pro workspaces)
@@ -78,7 +78,7 @@ has 'description' => (
     required => 0,
 );
 
-has 'workspace_id' => (
+has 'wid' => (
     is       => 'ro',
     isa      => 'Int',
     required => 0,
@@ -242,7 +242,7 @@ Returns json serialiable atributes.
 
 sub serializable_attributes {
     return
-      qw(id guid description workspace_id pid tid billable start stop duration created_with tags duronly at );
+      qw(id guid description wid pid tid billable start stop duration created_with tags duronly at );
 }
 
 =head2 boolean_atributes
@@ -325,7 +325,7 @@ your Modified Version complies with the requirements of this license.
 This license does not grant you the right to use any trademark, service
 mark, tradename, or logo of the Copyright Holder.
 
-This license includes the non-exclusive, worldworkspace_ide, free-of-charge
+This license includes the non-exclusive, worldwide, free-of-charge
 patent license to make, have made, use, offer to sell, sell, import and
 otherwise transfer the Package with respect to any patent claims
 licensable by the Copyright Holder that are necessarily infringed by
