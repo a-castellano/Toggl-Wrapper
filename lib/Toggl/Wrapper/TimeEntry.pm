@@ -45,7 +45,7 @@ This module manages Toggl time entries.
 =head1 Properties
 
 description: (string, strongly suggested to be used)
-wid: workspace ID (integer, required if pid or tid not supplied)
+workspace_id: workspace ID (integer, required if pid or tid not supplied)
 pid: project ID (integer, not required)
 tid: task ID (integer, not required)
 billable: (boolean, not required, default false, available for pro workspaces)
@@ -75,13 +75,23 @@ has 'guid' => (
 has 'description' => (
     is       => 'ro',
     isa      => 'Str',
+    default  => "",
     required => 0,
+);
+
+has 'workspace_id' => (
+    is       => 'ro',
+    isa      => 'Int',
+    required => 0,
+    predicate => 'has_workspace_id',
+    writer    => 'set_workspace_id',
 );
 
 has 'wid' => (
     is       => 'ro',
     isa      => 'Int',
     required => 0,
+    writer    => 'set_wid',
 );
 
 has 'pid' => (
@@ -138,6 +148,9 @@ has 'duration' => (
     is       => 'ro',
     isa      => 'Int',
     required => 1,
+    writer    => 'set_duration',
+    predicate => 'has_duration',
+
 );
 
 # Toggl API requires this attribute. It is up to wrappers to set it.
@@ -150,7 +163,7 @@ has 'created_with' => (
 
 has 'tags' => (
     is       => 'ro',
-    isa      => 'ArrayRef',
+    isa      => 'ArrayRef|Undef',
     required => 0,
 );
 
@@ -186,6 +199,11 @@ data. It also converts data to ISO 8601 format.
 sub BUILD {
     my $self = shift;
 
+if ( $self->has_workspace_id ) {
+  $self->set_workspace_id( int( $self->workspace_id ));
+  $self->set_wid( $self->workspace_id );
+}
+
     if ( $self->has_start_date && $self->has_start ) {
         croak
 "TimeEntry does not allow to be instanced with 'start_date' and 'start' at the same time. Only one of them is allowed.";
@@ -202,7 +220,13 @@ sub BUILD {
     }
 
     if ( $self->has_start_date ) {
-        $self->set_start( $self->start_date->iso8601() . 'Z' );
+
+my $start_str = $self->start_date->strftime('%Y-%m-%dT%H:%M:%S%z');
+$start_str =~ s/(\+|-)(\d{2})(\d{2})/$1$2:$3/;
+$self->set_start($start_str);
+
+
+#     $self->set_start( $self->start_date->strftime('%Y-%m-%dT%H:%M:%S%z') );
     }
     else {
         if ( !check_iso8601( $self->start ) ) {
@@ -211,7 +235,7 @@ sub BUILD {
     }
 
     if ( $self->has_stop_date ) {
-        $self->set_stop( $self->stop_date->iso8601() . 'Z' );
+        $self->set_stop( $self->stop_date->strftime('%Y-%m-%dT%H:%M:%S%z') );
     }
     elsif ( $self->has_stop ) {
         if ( !check_iso8601( $self->stop ) ) {
@@ -242,6 +266,7 @@ Returns json serialiable atributes.
 
 sub serializable_attributes {
     return
+    #qw(id guid description workspace_id pid tid billable start stop duration created_with tags duronly at );
       qw(id guid description wid pid tid billable start stop duration created_with tags duronly at );
 }
 
@@ -325,7 +350,7 @@ your Modified Version complies with the requirements of this license.
 This license does not grant you the right to use any trademark, service
 mark, tradename, or logo of the Copyright Holder.
 
-This license includes the non-exclusive, worldwide, free-of-charge
+This license includes the non-exclusive, worldworkspace_ide, free-of-charge
 patent license to make, have made, use, offer to sell, sell, import and
 otherwise transfer the Package with respect to any patent claims
 licensable by the Copyright Holder that are necessarily infringed by

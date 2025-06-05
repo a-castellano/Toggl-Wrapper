@@ -121,11 +121,10 @@ sub BUILD {
             url     => TOGGL_URL_V9 . 'me',
             auth    => \%auth,
             headers => [],
-            data    => {},
+            data    => "",
         }
     );
 
-    print(Dumper($response));
         $self->_set_api_token( $response->{api_token} );
         $self->_set_email( $response->{email} );
         $self->_set_user_data($response);
@@ -164,43 +163,16 @@ sub _make_api_call {
     }
 
     # Data
-    if (%$data) {
-      my %hash_data = %$data;
-      print("DENTRO\n");
-print(Dumper(keys %hash_data));
-        foreach my $key ( keys %hash_data ) {
-          print($key);
-print("\n");
-}
-      print("\nDENTRO\n");
+    if ($data) {
 
-        foreach my $key ( keys %hash_data ) {
-          if ($hash_data{$key}){
-          if (looks_like_number( $hash_data{$key} )) {
-            $json_data = "$json_data \"$key\":$hash_data{$key},";
-          }
-            else {
-              if ($key eq 'start'){
-              $json_data = "$json_data \"$key\":\"2025-05-27T22:00:00-00:00\",";
-              }
-              else{
-              $json_data = "$json_data \"$key\":\"$hash_data{$key}\",";
-            }
-            }
-            print($json_data);
-            print("\n");
-        }
-        }
-        $json_data = substr( $json_data, 0, -1 );
-        $json_data = "{$json_data}";
-        $request->content($json_data);
+        $request->content($data);
+
     }
     else {
         $request->content("");
         $request->content_length('0');
     }
     my $response = $wrapper->request($request);
-    print(Dumper($response));
     if ( $response->is_success ) {
         $response = $response->decoded_content;
         my $json = parse_json($response);
@@ -234,8 +206,8 @@ sub _set_required_default_time_entry_values() {
     my $response;
 
     # If there is no wid defined, Wrapper will use default one
-    if ( !$time_entry_data->{wid} ) {
-        $time_entry_data->{wid} = $self->_user_data->{default_workspace_id};
+    if ( !$time_entry_data->{workspace_id} ) {
+        $time_entry_data->{workspace_id} = int($self->_user_data->{default_workspace_id});
     }
 
     # Set created_with
@@ -257,28 +229,18 @@ sub create_time_entry() {
 
     my $time_entry = Toggl::Wrapper::TimeEntry->new( \%time_entry_data );
 
-    my $time_entry_string = $time_entry->as_json();
-    print(Dumper($time_entry_string));
-    my $time_entry_hash = decode_json($time_entry_string);
-
-my %data_to_send;
-$data_to_send{start}="\"".$time_entry->start."\"";
-$data_to_send{duration}=$time_entry->duration;
-$data_to_send{created_with}="\"".$time_entry->created_with."\"";
-$data_to_send{wid}=$time_entry->wid;
-
     $response = _make_api_call(
         {
             type => 'POST',
-            url  => TOGGL_URL_V9 . 'workspaces/' . $time_entry->{wid} . '/time_entries',
+            url  => TOGGL_URL_V9 . 'workspaces/' . $time_entry->{workspace_id} . '/time_entries',
             auth => {
                 api_token => $self->api_token,
             },
             headers => [ { 'Content-Type' => 'application/json' } ],
-            data => $time_entry_hash,
+            data => $time_entry->as_json(),
         }
     );
-    return Toggl::Wrapper::TimeEntry->new( %{ $response->{data} } );
+    return Toggl::Wrapper::TimeEntry->new( %{ $response } );
 }
 
 =head2 start_time_entry
