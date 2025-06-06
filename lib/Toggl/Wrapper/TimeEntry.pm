@@ -56,7 +56,17 @@ duration: time entry duration in seconds. If the time entry is currently running
 created_with: the name of your client app (string, required)
 tags: a list of tag names (array of strings, not required)
 duronly: should Toggl show the start and stop time of this time entry? (boolean, not required)
-at: timestamp that is sent in the response, indicates the time item was last updatedead1 SUBROUTINES/METHODS
+at: timestamp that is sent in the response, indicates the time item was last updated
+id: unique time entry ID (integer, not required)
+guid: globally unique identifier for the time entry (string, not required)
+start_date: time entry start time as DateTime object (DateTime, not required)
+stop_date: time entry stop time as DateTime object (DateTime, not required)
+project_id: project ID (integer or undef, not required)
+server_deleted_at: deletion timestamp from server (string or undef, not required)
+tag_ids: list of tag IDs (arrayref or undef, not required)
+task_id: task ID (integer or undef, not required)
+user_id: user ID (integer or undef, not required)
+uid: user ID (integer, not required)
 
 =cut
 
