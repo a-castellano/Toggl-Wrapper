@@ -46,6 +46,7 @@ This module manages Toggl time entries.
 
 description: (string, strongly suggested to be used)
 workspace_id: workspace ID (integer, required if pid or tid not supplied)
+wid: alias for workspace_id
 pid: project ID (integer, not required)
 tid: task ID (integer, not required)
 billable: (boolean, not required, default false, available for pro workspaces)
@@ -56,6 +57,7 @@ created_with: the name of your client app (string, required)
 tags: a list of tag names (array of strings, not required)
 duronly: should Toggl show the start and stop time of this time entry? (boolean, not required)
 at: timestamp that is sent in the response, indicates the time item was last updatedead1 SUBROUTINES/METHODS
+
 =cut
 
 has 'id' => (
@@ -153,7 +155,35 @@ has 'duration' => (
 
 );
 
-# Toggl API requires this attribute. It is up to wrappers to set it.
+has 'project_id' => (
+    is       => 'ro',
+    isa      => 'Int|Undef',
+    required => 0,
+);
+
+has 'server_deleted_at' => (
+    is       => 'ro',
+    isa      => 'Str|Undef',
+    required => 0,
+);
+
+has 'tag_ids' => (
+    is       => 'ro',
+    isa      => 'ArrayRef|Undef',
+    required => 0,
+);
+
+has 'task_id' => (
+    is       => 'ro',
+    isa      => 'Int|Undef',
+    required => 0,
+);
+
+has 'user_id' => (
+    is       => 'ro',
+    isa      => 'Int|Undef',
+    required => 0,
+);
 
 has 'created_with' => (
     is       => 'ro',
