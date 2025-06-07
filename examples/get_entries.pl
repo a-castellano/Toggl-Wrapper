@@ -31,7 +31,7 @@ else {
 
 my $tggl = Toggl::Wrapper->new(%data);
 
-#die Dumper $tggl->get_time_entries();
+die Dumper $tggl->get_time_entries();
 my @entries = @{
     $tggl->get_time_entries(
         {
@@ -40,8 +40,3 @@ my @entries = @{
         }
     )
 };
-
-my $arrSize = @entries;
-
-#die $arrSize;
-

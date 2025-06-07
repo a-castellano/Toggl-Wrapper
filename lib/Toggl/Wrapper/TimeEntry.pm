@@ -21,7 +21,7 @@ use DateTime::Format::ISO8601;
 use Try::Tiny;
 use Carp qw(croak);
 
-use Utils::Common qw(check_iso8601);
+use Utils::Common qw(check_iso8601 getdatestring);
 with "Utils::Role::Serializable::JSON";
 use namespace::autoclean;
 
@@ -143,16 +143,15 @@ has 'start' => (
 
 has 'stop_date' => (
     is        => 'ro',
-    isa       => 'DateTime',
+    isa       => 'DateTime'|'Undef',
     required  => 0,
     predicate => 'has_stop_date',
 );
 
 has 'stop' => (
     is        => 'ro',
-    isa       => 'Str',
+    isa       => 'Str|Undef',
     required  => 0,
-    writer    => 'set_stop',
     predicate => 'has_stop',
 );
 
@@ -261,29 +260,28 @@ if ( $self->has_workspace_id ) {
 
     if ( $self->has_start_date ) {
 
-my $start_str = $self->start_date->strftime('%Y-%m-%dT%H:%M:%S%z');
-$start_str =~ s/(\+|-)(\d{2})(\d{2})/$1$2:$3/;
-$self->set_start($start_str);
-
-
-#     $self->set_start( $self->start_date->strftime('%Y-%m-%dT%H:%M:%S%z') );
+$self->set_start(getdatestring( $self->start_date ) );
     }
     else {
         if ( !check_iso8601( $self->start ) ) {
             croak "Attibute 'start' format is not valid.";
         }
+      $self->set_start( $self->start );
     }
 
     if ( $self->has_stop_date ) {
         $self->set_stop( $self->stop_date->strftime('%Y-%m-%dT%H:%M:%S%z') );
     }
     elsif ( $self->has_stop ) {
+      if ($self->stop) {
         if ( !check_iso8601( $self->stop ) ) {
             croak "Attibute 'stop' format is not valid.";
+        }
         }
     }
 
     if ( $self->has_stop ) {
+      if ($self->stop) {
         if (
             DateTime->compare(
                 DateTime::Format::ISO8601->parse_datetime( $self->start ),
@@ -294,6 +292,7 @@ $self->set_start($start_str);
             croak "End date has to be greater than start date.";
         }
 
+    }
     }
 
 }

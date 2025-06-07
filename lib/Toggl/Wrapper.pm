@@ -27,7 +27,7 @@ use Carp qw(croak);
 use Try::Tiny;
 
 use Toggl::Wrapper::TimeEntry;
-use Utils::Common qw(check_iso8601);
+use Utils::Common qw(check_iso8601 getdatestring);
 use Data::Dumper;
 
 use namespace::autoclean;
@@ -165,7 +165,7 @@ sub _make_api_call {
     # Data
     if ($data) {
 
-        $request->content($data);
+      $request->content($data);
 
     }
     else {
@@ -248,14 +248,14 @@ Starts new time entry.
 =cut
 
 sub start_time_entry() {
-    my ( $self, %time_entry_data ) = @_;
+    my ( $self,%time_entry_data ) = @_;
     my $response;
     my %response_data;
 
     $self->_set_required_default_time_entry_values( \%time_entry_data );
 
     # Start time does not need duration, set negative one.
-    $time_entry_data{duration}   = 0;
+    $time_entry_data{duration}   = -1;
     $time_entry_data{start_date} = DateTime->now();
 
     my $time_entry = Toggl::Wrapper::TimeEntry->new(%time_entry_data);
@@ -263,15 +263,15 @@ sub start_time_entry() {
     $response = _make_api_call(
         {
             type => 'POST',
-            url  => join( '', ( TOGGL_URL_V9, 'time_entries/start' ) ),
+            url  => join( '', ( TOGGL_URL_V9, 'workspaces/',$time_entry->workspace_id,'/time_entries' ) ),
             auth => {
                 api_token => $self->api_token,
             },
             headers => [ { 'Content-Type' => 'application/json' } ],
-            data => { time_entry => $time_entry->as_json() },
+            data => $time_entry->as_json(),
         }
     );
-    return Toggl::Wrapper::TimeEntry->new( $response->{data} );
+    return Toggl::Wrapper::TimeEntry->new( $response );
 }
 
 =head2 stop_time_entry
@@ -297,12 +297,11 @@ Get time entry details from a given entry id.
 sub get_time_entry_details() {
     my ( $self, $time_entry_id ) = @_;
     my $response;
-
     $response = _make_api_call(
         {
             type => 'GET',
             url =>
-              join( '', ( TOGGL_URL_V9, "time_entries/", $time_entry_id ) ),
+              join( '', ( TOGGL_URL_V9, "/me/time_entries/", $time_entry_id ) ),
             auth => {
                 api_token => $self->api_token,
             },
@@ -487,7 +486,7 @@ sub get_time_entries() {
         }
 
         if ( ref $date_range->{start} eq "DateTime" ) {
-            $start = $date_range->{start}->iso8601() . 'Z';
+            $start = getdatestring($date_range->{start});
         }
         else {
             $start = $date_range->{start};
@@ -497,7 +496,7 @@ sub get_time_entries() {
         }
 
         if ( ref $date_range->{stop} eq "DateTime" ) {
-            $stop = $date_range->{stop}->iso8601() . 'Z';
+            $stop = getdatestring($date_range->{stop});
         }
         else {
             $stop = $date_range->{stop};
@@ -520,21 +519,21 @@ sub get_time_entries() {
         $data = "?start_date=$start&end_date=$stop";
     }
 
+
     $response = _make_api_call(
         {
             type => 'GET',
-            url  => join( '', ( TOGGL_URL_V9, "time_entries", $data ) ),
+            url  => join( '', ( TOGGL_URL_V9, "me/time_entries", $data ) ),
             auth => {
                 api_token => $self->api_token,
             },
             headers => [],
-            data    => {},
         }
     );
 
     map { push( @time_entries, Toggl::Wrapper::TimeEntry->new($_) ) }
       @{$response};
-    return \@time_entries;
+    return @time_entries;
 }
 
 =head2 bulk_update_time_entries_tags
