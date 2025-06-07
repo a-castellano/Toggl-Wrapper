@@ -218,85 +218,70 @@ qr/TimeEntry does not allow to be instanced without 'start_date' or 'start'/,
 
 }
 
-###sub start_entry : Tests(1) {
-###    my $test  = shift;
-###    my $class = $test->class_to_test;
-###
-###    my ( $mocked_lwp, $mocked_http_request, $mocked_http_response ) = mock();
-###
-###    my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
-###
-###    my $return_json_example =
-###'{"data":{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-14T12:00:00Z","duration":"-900"}}';
-###
-###    $mocked_http_response->mock(
-###        "decoded_content",
-###        sub {
-###            return $return_json_example;
-###        }
-###    );
-###
-###    ok $wrapper->start_time_entry(), "Start time_entry";
-###}
-###
-###sub stop_entry : Tests(4) {
-###    my $test  = shift;
-###    my $class = $test->class_to_test;
-###
-###    my ( $mocked_lwp, $mocked_http_request, $mocked_http_response ) = mock();
-###
-###    my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
-###
-###    my $return_json_example =
-###'{"data":{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-14T12:00:00Z","duration":"-900"}}';
-###
-###    $mocked_http_response->mock(
-###        "decoded_content",
-###        sub {
-###            return $return_json_example;
-###        }
-###    );
-###
-###    my $time_entry = $wrapper->start_time_entry();
-###    ok $wrapper->stop_time_entry($time_entry), "Stop time entry.";
-###
-###    $time_entry = $wrapper->start_time_entry();
-###    ok $wrapper->stop_time_entry_by_id(34567890), "Stop time entry.";
-###
-###    throws_ok { $wrapper->stop_time_entry_by_id("imnotanumber") }
-###    qr/TimeEntry id must be a number/,
-###      "Cannont stop a TimeEntry without a numeric id";
-###
-###    throws_ok {
-###        $wrapper->stop_time_entry(
-###            Toggl::Wrapper::TimeEntry->new(
-###                start_date => DateTime->new(
-###                    year      => '2018',
-###                    month     => '3',
-###                    day       => '8',
-###                    hour      => '12',
-###                    minute    => '0',
-###                    time_zone => 'local'
-###                ),
-###                stop_date => DateTime->new(
-###                    year      => '2018',
-###                    month     => '3',
-###                    day       => '8',
-###                    hour      => '12',
-###                    minute    => '15',
-###                    time_zone => 'local'
-###                ),
-###
-###                duration     => 900,
-###                created_with => "TestEntry.pm"
-###            )
-###        );
-###    }
-###    qr/entry does not contain 'id' field/,
-###      "Cannont stop a TimeEntry without id";
-###
-###}
-###
+sub start_entry : Tests(1) {
+    my $test  = shift;
+    my $class = $test->class_to_test;
+
+    my ( $mocked_lwp, $mocked_http_request, $mocked_http_response ) = mock();
+
+    my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
+
+    my $return_json_example =
+'{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-14T12:00:00Z","duration":"-900"}';
+
+    $mocked_http_response->mock(
+        "decoded_content",
+        sub {
+            return $return_json_example;
+        }
+    );
+
+    ok $wrapper->start_time_entry(), "Start time_entry";
+}
+
+sub stop_entry : Tests(4) {
+    my $test  = shift;
+    my $class = $test->class_to_test;
+
+    my ( $mocked_lwp, $mocked_http_request, $mocked_http_response ) = mock();
+
+    my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
+
+    my $return_json_example =
+'{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-14T12:00:00Z","duration":"-900"}';
+
+    $mocked_http_response->mock(
+        "decoded_content",
+        sub {
+            return $return_json_example;
+        }
+    );
+
+    my $time_entry = $wrapper->start_time_entry();
+    ok $wrapper->stop_time_entry($time_entry), "Stop time entry.";
+
+    $time_entry = $wrapper->start_time_entry();
+    ok $wrapper->stop_time_entry_by_id(34567890,1364303), "Stop time entry.";
+
+    throws_ok { $wrapper->stop_time_entry_by_id("imnotanumber") }
+    qr/TimeEntry id must be a number/,
+      "Cannont stop a TimeEntry without a numeric id";
+
+    throws_ok {
+        $wrapper->stop_time_entry(
+            Toggl::Wrapper::TimeEntry->new(
+                start_date => DateTime->today(),
+                stop_date => DateTime->today()->add(minutes => 15),
+                duration     => 900,
+                created_with => "TestEntry.pm"
+            )
+        );
+    }
+    qr/entry does not contain 'id' field/,
+      "Cannont stop a TimeEntry without id";
+
+}
+
 ###sub get_entry_details : Tests(1) {
 ###    my $test  = shift;
 ###    my $class = $test->class_to_test;
@@ -960,7 +945,7 @@ sub mock {
         "decoded_content",
         sub {
             return
-'{"id":921391,"api_token":"u1tra53cr3tt0k3n","default_wid":1864303,"email":"myemail@domain.com","fullname":"Wrapper Test User","jquery_timeofday_format":"h:i A","jquery_date_format":"m/d/Y","timeofday_format":"h:mm A","date_format":"MM/DD/YYYY","store_start_and_stop_time":true,"beginning_of_week":1,"language":"en_US","image_url":"https://assets.toggl.com/images/profile.png","sidebar_piechart":true,"at":"2018-02-06T05:14:02+00:00","created_at":"2013-03-06T18:14:24+00:00","retention":9,"record_timeline":false,"render_timeline":false,"timeline_enabled":false,"timeline_experiment":false,"new_blog_post":{"title":"Notes on Yesterday’s Server Problems","url":"http://blog.toggl.com/notes-on-yesterdays-server-problems/","category":"Announcement","pub_date":"2018-01-17T13:44:50Z"},"should_upgrade":true,"achievements_enabled":true,"timezone":"Europe/Madrid","openid_enabled":true,"openid_email":"myemail@domain.com","send_product_emails":true,"send_weekly_report":true,"send_timer_notifications":true,"last_blog_entry":"","invitation":{},"workspaces":[{"id":1364303,"name":"User\'s workspace","profile":0,"premium":false,"admin":true,"default_hourly_rate":0,"default_currency":"USD","only_admins_may_create_projects":false,"only_admins_see_billable_rates":false,"only_admins_see_team_dashboard":false,"projects_billable_by_default":true,"rounding":1,"rounding_minutes":0,"api_token":"u1tra53cr3tt0k3n","at":"2013-03-06T18:14:25+00:00","ical_enabled":true}],"duration_format":"improved","obm":{"included":false,"nr":0,"actions":"tree"}}';
+'{"id":921391,"api_token":"u1tra53cr3tt0k3n","default_workspace_id":1864303,"email":"myemail@domain.com","fullname":"Wrapper Test User","jquery_timeofday_format":"h:i A","jquery_date_format":"m/d/Y","timeofday_format":"h:mm A","date_format":"MM/DD/YYYY","store_start_and_stop_time":true,"beginning_of_week":1,"language":"en_US","image_url":"https://assets.toggl.com/images/profile.png","sidebar_piechart":true,"at":"2018-02-06T05:14:02+00:00","created_at":"2013-03-06T18:14:24+00:00","retention":9,"record_timeline":false,"render_timeline":false,"timeline_enabled":false,"timeline_experiment":false,"new_blog_post":{"title":"Notes on Yesterday’s Server Problems","url":"http://blog.toggl.com/notes-on-yesterdays-server-problems/","category":"Announcement","pub_date":"2018-01-17T13:44:50Z"},"should_upgrade":true,"achievements_enabled":true,"timezone":"Europe/Madrid","openid_enabled":true,"openid_email":"myemail@domain.com","send_product_emails":true,"send_weekly_report":true,"send_timer_notifications":true,"last_blog_entry":"","invitation":{},"workspaces":[{"id":1364303,"name":"User\'s workspace","profile":0,"premium":false,"admin":true,"default_hourly_rate":0,"default_currency":"USD","only_admins_may_create_projects":false,"only_admins_see_billable_rates":false,"only_admins_see_team_dashboard":false,"projects_billable_by_default":true,"rounding":1,"rounding_minutes":0,"api_token":"u1tra53cr3tt0k3n","at":"2013-03-06T18:14:25+00:00","ical_enabled":true}],"duration_format":"improved","obm":{"included":false,"nr":0,"actions":"tree"}}';
         }
     );
 
