@@ -22,8 +22,8 @@ use HTTP::Request;
 use HTTP::Response;
 use JSON::Parse ':all';
 use JSON::MaybeXS qw(encode_json decode_json);
-use Scalar::Util qw(looks_like_number);
-use Carp qw(croak);
+use Scalar::Util  qw(looks_like_number);
+use Carp          qw(croak);
 use Try::Tiny;
 
 use Toggl::Wrapper::TimeEntry;
@@ -125,9 +125,9 @@ sub BUILD {
         }
     );
 
-        $self->_set_api_token( $response->{api_token} );
-        $self->_set_email( $response->{email} );
-        $self->_set_user_data($response);
+    $self->_set_api_token( $response->{api_token} );
+    $self->_set_email( $response->{email} );
+    $self->_set_user_data($response);
 
 }
 
@@ -165,7 +165,7 @@ sub _make_api_call {
     # Data
     if ($data) {
 
-      $request->content($data);
+        $request->content($data);
 
     }
     else {
@@ -207,7 +207,8 @@ sub _set_required_default_time_entry_values() {
 
     # If there is no wid defined, Wrapper will use default one
     if ( !$time_entry_data->{workspace_id} ) {
-        $time_entry_data->{workspace_id} = int($self->_user_data->{default_workspace_id});
+        $time_entry_data->{workspace_id} =
+          int( $self->_user_data->{default_workspace_id} );
     }
 
     # Set created_with
@@ -222,7 +223,6 @@ Creates and publishes a new time entry.
 sub create_time_entry() {
     my ( $self, %time_entry_data ) = @_;
 
-
     $self->_set_required_default_time_entry_values( \%time_entry_data );
 
     my $response;
@@ -232,15 +232,18 @@ sub create_time_entry() {
     $response = _make_api_call(
         {
             type => 'POST',
-            url  => TOGGL_URL_V9 . 'workspaces/' . $time_entry->{workspace_id} . '/time_entries',
+            url  => TOGGL_URL_V9
+              . 'workspaces/'
+              . $time_entry->{workspace_id}
+              . '/time_entries',
             auth => {
                 api_token => $self->api_token,
             },
             headers => [ { 'Content-Type' => 'application/json' } ],
-            data => $time_entry->as_json(),
+            data    => $time_entry->as_json(),
         }
     );
-    return Toggl::Wrapper::TimeEntry->new( %{ $response } );
+    return Toggl::Wrapper::TimeEntry->new( %{$response} );
 }
 
 =head2 start_time_entry
@@ -248,7 +251,7 @@ Starts new time entry.
 =cut
 
 sub start_time_entry() {
-    my ( $self,%time_entry_data ) = @_;
+    my ( $self, %time_entry_data ) = @_;
     my $response;
     my %response_data;
 
@@ -263,15 +266,21 @@ sub start_time_entry() {
     $response = _make_api_call(
         {
             type => 'POST',
-            url  => join( '', ( TOGGL_URL_V9, 'workspaces/',$time_entry->workspace_id,'/time_entries' ) ),
+            url  => join(
+                '',
+                (
+                    TOGGL_URL_V9,              'workspaces/',
+                    $time_entry->workspace_id, '/time_entries'
+                )
+            ),
             auth => {
                 api_token => $self->api_token,
             },
             headers => [ { 'Content-Type' => 'application/json' } ],
-            data => $time_entry->as_json(),
+            data    => $time_entry->as_json(),
         }
     );
-    return Toggl::Wrapper::TimeEntry->new( $response );
+    return Toggl::Wrapper::TimeEntry->new($response);
 }
 
 =head2 stop_time_entry
@@ -287,9 +296,10 @@ sub stop_time_entry() {
 passed entry does not contain 'id' field.";
     }
 
-    $self->_check_id_is_numeric($time_entry->id);
+    $self->_check_id_is_numeric( $time_entry->id );
 
-    return $self->stop_time_entry_by_id( $time_entry->id,$time_entry->workspace_id );
+    return $self->stop_time_entry_by_id( $time_entry->id,
+        $time_entry->workspace_id );
 
 }
 
@@ -303,7 +313,7 @@ sub get_time_entry_details() {
     $response = _make_api_call(
         {
             type => 'GET',
-            url =>
+            url  =>
               join( '', ( TOGGL_URL_V9, "/me/time_entries/", $time_entry_id ) ),
             auth => {
                 api_token => $self->api_token,
@@ -332,7 +342,7 @@ Stop time entries from a given entry id.
 =cut
 
 sub stop_time_entry_by_id() {
-    my ( $self,$time_entry_id , $workspace_id) = @_;
+    my ( $self, $time_entry_id, $workspace_id ) = @_;
     my $response;
 
     $self->_check_id_is_numeric($time_entry_id);
@@ -340,15 +350,21 @@ sub stop_time_entry_by_id() {
     $response = _make_api_call(
         {
             type => 'PATCH',
-            url  => join( '',
-                ( TOGGL_URL_V9, "workspaces/",$workspace_id,"/time_entries/", $time_entry_id, "/stop"  )),
+            url  => join(
+                '',
+                (
+                    TOGGL_URL_V9,   "workspaces/",
+                    $workspace_id,  "/time_entries/",
+                    $time_entry_id, "/stop"
+                )
+            ),
             auth => {
                 api_token => $self->api_token,
             },
             headers => [ { 'Content-Type' => 'application/json' } ],
         }
     );
-    return Toggl::Wrapper::TimeEntry->new( $response );
+    return Toggl::Wrapper::TimeEntry->new($response);
 }
 
 =head2 get_running_time_entry
@@ -386,16 +402,22 @@ sub update_time_entry_by_id() {
     $response = _make_api_call(
         {
             type => 'PUT',
-            url  => join( '',
-                ( TOGGL_URL_V9, "workspaces/",$workspace_id,"/time_entries/", $time_entry_id  )),
+            url  => join(
+                '',
+                (
+                    TOGGL_URL_V9,  "workspaces/",
+                    $workspace_id, "/time_entries/",
+                    $time_entry_id
+                )
+            ),
             auth => {
                 api_token => $self->api_token,
             },
             headers => [ { 'Content-Type' => 'application/json' } ],
-            data => encode_json $update_data ,
+            data    => encode_json $update_data,
         }
     );
-    return Toggl::Wrapper::TimeEntry->new( $response );
+    return Toggl::Wrapper::TimeEntry->new($response);
 }
 
 =head2 update_time_entry
@@ -411,7 +433,8 @@ sub update_time_entry() {
 passed entry does not contain 'id' field.";
     }
 
-    return $self->update_time_entry_by_id( $time_entry->id, $time_entry->workspace_id, $update_data );
+    return $self->update_time_entry_by_id( $time_entry->id,
+        $time_entry->workspace_id, $update_data );
 }
 
 =head2 delete_time_entry_by_id
@@ -427,7 +450,7 @@ sub delete_time_entry_by_id() {
     $response = _make_api_call(
         {
             type => 'DELETE',
-            url =>
+            url  =>
               join( '', ( TOGGL_URL_V9, "time_entries/", "$time_entry_id" ) ),
             auth    => { api_token => $self->api_token },
             headers => [],
@@ -488,7 +511,7 @@ sub get_time_entries() {
         }
 
         if ( ref $date_range->{start} eq "DateTime" ) {
-            $start = getdatestring($date_range->{start});
+            $start = getdatestring( $date_range->{start} );
         }
         else {
             $start = $date_range->{start};
@@ -498,7 +521,7 @@ sub get_time_entries() {
         }
 
         if ( ref $date_range->{stop} eq "DateTime" ) {
-            $stop = getdatestring($date_range->{stop});
+            $stop = getdatestring( $date_range->{stop} );
         }
         else {
             $stop = $date_range->{stop};
@@ -520,7 +543,6 @@ sub get_time_entries() {
 
         $data = "?start_date=$start&end_date=$stop";
     }
-
 
     $response = _make_api_call(
         {
@@ -602,20 +624,26 @@ sub bulk_update_time_entries_tags() {
 
     $ids = join( ',', @{ $parameters->{time_entry_ids} } );
 
-
-        $data{op} = $parameters->{tag_action};
-        $data{path} = "/tags";
-        $data{value} = $parameters->{tags};
+    $data{op}    = $parameters->{tag_action};
+    $data{path}  = "/tags";
+    $data{value} = $parameters->{tags};
 
     $response = _make_api_call(
         {
             type => 'PATCH',
-            url  => join( '', ( TOGGL_URL_V9, "workspaces/",$self->_user_data->{default_workspace_id},"/time_entries/", $ids ) ),
+            url  => join(
+                '',
+                (
+                    TOGGL_URL_V9, "workspaces/",
+                    $self->_user_data->{default_workspace_id},
+                    "/time_entries/", $ids
+                )
+            ),
             auth => {
                 api_token => $self->api_token,
             },
             headers => [],
-            data    => encode_json [\%data],
+            data    => encode_json [ \%data ],
         }
     );
 
@@ -627,13 +655,11 @@ Rewturns default workspace ID for the logged user.
 =cut
 
 sub default_workspace_id() {
-    my ( $self ) = @_;
+    my ($self) = @_;
 
     return $self->_user_data->{default_workspace_id};
 
 }
-
-
 
 =head1 AUTHOR
 

@@ -92,9 +92,9 @@ has 'description' => (
 );
 
 has 'workspace_id' => (
-    is       => 'ro',
-    isa      => 'Int',
-    required => 0,
+    is        => 'ro',
+    isa       => 'Int',
+    required  => 0,
     predicate => 'has_workspace_id',
     writer    => 'set_workspace_id',
 );
@@ -103,7 +103,7 @@ has 'wid' => (
     is       => 'ro',
     isa      => 'Int',
     required => 0,
-    writer    => 'set_wid',
+    writer   => 'set_wid',
 );
 
 has 'pid' => (
@@ -143,7 +143,7 @@ has 'start' => (
 
 has 'stop_date' => (
     is        => 'ro',
-    isa       => 'DateTime'|'Undef',
+    isa       => 'DateTime' | 'Undef',
     required  => 0,
     predicate => 'has_stop_date',
 );
@@ -156,9 +156,9 @@ has 'stop' => (
 );
 
 has 'duration' => (
-    is       => 'ro',
-    isa      => 'Int',
-    required => 1,
+    is        => 'ro',
+    isa       => 'Int',
+    required  => 1,
     writer    => 'set_duration',
     predicate => 'has_duration',
 
@@ -238,10 +238,10 @@ data. It also converts data to ISO 8601 format.
 sub BUILD {
     my $self = shift;
 
-if ( $self->has_workspace_id ) {
-  $self->set_workspace_id( int( $self->workspace_id ));
-  $self->set_wid( $self->workspace_id );
-}
+    if ( $self->has_workspace_id ) {
+        $self->set_workspace_id( int( $self->workspace_id ) );
+        $self->set_wid( $self->workspace_id );
+    }
 
     if ( $self->has_start_date && $self->has_start ) {
         croak
@@ -260,39 +260,39 @@ if ( $self->has_workspace_id ) {
 
     if ( $self->has_start_date ) {
 
-$self->set_start(getdatestring( $self->start_date ) );
+        $self->set_start( getdatestring( $self->start_date ) );
     }
     else {
         if ( !check_iso8601( $self->start ) ) {
             croak "Attibute 'start' format is not valid.";
         }
-      $self->set_start( $self->start );
+        $self->set_start( $self->start );
     }
 
     if ( $self->has_stop_date ) {
         $self->set_stop( $self->stop_date->strftime('%Y-%m-%dT%H:%M:%S%z') );
     }
     elsif ( $self->has_stop ) {
-      if ($self->stop) {
-        if ( !check_iso8601( $self->stop ) ) {
-            croak "Attibute 'stop' format is not valid.";
-        }
+        if ( $self->stop ) {
+            if ( !check_iso8601( $self->stop ) ) {
+                croak "Attibute 'stop' format is not valid.";
+            }
         }
     }
 
     if ( $self->has_stop ) {
-      if ($self->stop) {
-        if (
-            DateTime->compare(
-                DateTime::Format::ISO8601->parse_datetime( $self->start ),
-                DateTime::Format::ISO8601->parse_datetime( $self->stop )
-            ) > 0
-          )
-        {
-            croak "End date has to be greater than start date.";
-        }
+        if ( $self->stop ) {
+            if (
+                DateTime->compare(
+                    DateTime::Format::ISO8601->parse_datetime( $self->start ),
+                    DateTime::Format::ISO8601->parse_datetime( $self->stop )
+                ) > 0
+              )
+            {
+                croak "End date has to be greater than start date.";
+            }
 
-    }
+        }
     }
 
 }
@@ -305,7 +305,8 @@ Returns json serialiable atributes.
 
 sub serializable_attributes {
     return
-    #qw(id guid description workspace_id pid tid billable start stop duration created_with tags duronly at );
+
+#qw(id guid description workspace_id pid tid billable start stop duration created_with tags duronly at );
       qw(id guid description wid pid tid billable start stop duration created_with tags duronly at );
 }
 

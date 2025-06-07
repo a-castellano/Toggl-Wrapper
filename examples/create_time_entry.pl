@@ -32,7 +32,7 @@ else {
 my $tggl = Toggl::Wrapper->new(%data);
 
 my $returned_data = $tggl->create_time_entry(
-    start_date => DateTime->today()->add(hours=> 6),
-    duration => 1000,
+    start_date => DateTime->today()->add( hours => 6 ),
+    duration   => 1000,
 );
 
