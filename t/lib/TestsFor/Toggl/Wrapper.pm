@@ -145,79 +145,79 @@ qr/a $class with no user or password neither api_token. You can only create an i
 
 }
 
-###sub failed_request : Tests(1) {
-###    my $test  = shift;
-###    my $class = $test->class_to_test;
-###
-###    my ( $mocked_lwp, $mocked_http_request, $mocked_http_response ) = mock();
-###
-###    $mocked_lwp->mock( 'is_success', sub { return 0; } );
-###
-###    $mocked_lwp->mock(
-###        'request',
-###        sub {
-###            return HTTP::Response->new( 400, 'Bad Request' );
-###        }
-###    );
-###
-###    throws_ok {
-###        $class->new( api_token => 'u1tra53cr3tt0k3n', );
-###    }
-###    qr/An error ocurred: API call returned 400: Bad Request/,
-###      "Creating $class with unespected return code should fail.";
-###
-###}
-###
-###sub create_entry : Tests(3) {
-###    my $test  = shift;
-###    my $class = $test->class_to_test;
-###
-###    my ( $mocked_lwp, $mocked_http_request, $mocked_http_response ) = mock();
-###
-###    my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
-###
-###    throws_ok { $wrapper->create_time_entry() }
-###    qr/Attribute \(duration\) is required at constructor/,
-###      "Calling create_time_entry with no duration attribute should fail.";
-###
-###    throws_ok { $wrapper->create_time_entry( duration => 900 ) }
-###qr/TimeEntry does not allow to be instanced without 'start_date' or 'start'/,
-###      "Calling create_time_entry with no start_date attribute should fail.";
-###
-###    my $return_json_example =
-###'{"data":{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-13T12:00:00Z","duration":900,"uid":2143391, "tags":[], "duronly":0}}';
-###
-###    $mocked_http_response->mock(
-###        "decoded_content",
-###        sub {
-###            return $return_json_example;
-###        }
-###    );
-###
-###    my $returned_data = $wrapper->create_time_entry(
-###        duration    => 900,
-###        description => "Test entry",
-###        start_date  => DateTime->new(
-###            year      => '2018',
-###            month     => '2',
-###            day       => '13',
-###            hour      => '18',
-###            minute    => '0',
-###            time_zone => 'local',
-###        ),
-###    );
-###
-###    my $json =
-###'{"guid":null,"tid":null,"id":"798455036","duronly":false,"pid":null,"tags":[],"duration":"900","start":"2018-02-13T12:00:00Z","at":null,"created_with":null,"stop":null,"billable":false,"description":null,"wid":"1364303"}';
-###
-###    is_deeply(
-###        decode_json $returned_data->as_json(),
-###        decode_json $json,
-###        "Wrapper is able to create time entries."
-###    );
-###
-###}
-###
+sub failed_request : Tests(1) {
+    my $test  = shift;
+    my $class = $test->class_to_test;
+
+    my ( $mocked_lwp, $mocked_http_request, $mocked_http_response ) = mock();
+
+    $mocked_lwp->mock( 'is_success', sub { return 0; } );
+
+    $mocked_lwp->mock(
+        'request',
+        sub {
+            return HTTP::Response->new( 400, 'Bad Request' );
+        }
+    );
+
+    throws_ok {
+        $class->new( api_token => 'u1tra53cr3tt0k3n', );
+    }
+    qr/An error ocurred: API call returned 400: Bad Request/,
+      "Creating $class with unespected return code should fail.";
+
+}
+
+sub create_entry : Tests(3) {
+    my $test  = shift;
+    my $class = $test->class_to_test;
+
+    my ( $mocked_lwp, $mocked_http_request, $mocked_http_response ) = mock();
+
+    my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
+
+    throws_ok { $wrapper->create_time_entry() }
+    qr/Attribute \(duration\) is required at constructor/,
+      "Calling create_time_entry with no duration attribute should fail.";
+
+    throws_ok { $wrapper->create_time_entry( duration => 900 ) }
+qr/TimeEntry does not allow to be instanced without 'start_date' or 'start'/,
+      "Calling create_time_entry with no start_date attribute should fail.";
+
+    my $return_json_example =
+'{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-13T12:00:00Z","duration":900,"uid":2143391, "tags":[], "duronly":0, "description": "Test entry"}';
+
+    $mocked_http_response->mock(
+        "decoded_content",
+        sub {
+            return $return_json_example;
+        }
+    );
+
+    my $returned_data = $wrapper->create_time_entry(
+        duration    => 900,
+        description => "Test entry",
+        start_date  => DateTime->new(
+            year      => '2018',
+            month     => '2',
+            day       => '13',
+            hour      => '18',
+            minute    => '0',
+            time_zone => 'local',
+        ),
+    );
+
+    my $json =
+'{"guid":null,"tid":null,"id":"798455036","duronly":false,"pid":null,"tags":[],"duration":"900","start":"2018-02-13T12:00:00Z","at":null,"created_with":null,"stop":null,"billable":false,"description":"Test entry","wid":"1364303"}';
+
+    is_deeply(
+        decode_json $returned_data->as_json(),
+        decode_json $json,
+        "Wrapper is able to create time entries."
+    );
+
+}
+
 ###sub start_entry : Tests(1) {
 ###    my $test  = shift;
 ###    my $class = $test->class_to_test;
