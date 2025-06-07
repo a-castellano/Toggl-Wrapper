@@ -41,3 +41,6 @@ $tggl->stop_time_entry($returned_data);
 
 $tggl->update_time_entry( $returned_data,
     { description => "Change description" } );
+
+my $time_sntry_details = $tggl->get_time_entry_details( $returned_data->id);
+print( Dumper $time_sntry_details );

@@ -314,15 +314,14 @@ sub get_time_entry_details() {
         {
             type => 'GET',
             url  =>
-              join( '', ( TOGGL_URL_V9, "/me/time_entries/", $time_entry_id ) ),
+              join( '', ( TOGGL_URL_V9, "me/time_entries/", $time_entry_id ) ),
             auth => {
                 api_token => $self->api_token,
             },
             headers => [],
-            data    => {},
         }
     );
-    return Toggl::Wrapper::TimeEntry->new( $response->{data} );
+    return Toggl::Wrapper::TimeEntry->new( $response );
 }
 
 =head2 _check_timeentry_id_is_numeric
@@ -378,15 +377,14 @@ sub get_running_time_entry() {
     $response = _make_api_call(
         {
             type => 'GET',
-            url  => join( '', ( TOGGL_URL_V9, "time_entries/current" ) ),
+            url  => join( '', ( TOGGL_URL_V9, "me/time_entries/current" ) ),
             auth => {
                 api_token => $self->api_token,
             },
             headers => [],
-            data    => {},
         }
     );
-    return Toggl::Wrapper::TimeEntry->new( $response->{data} );
+    return Toggl::Wrapper::TimeEntry->new( $response );
 }
 
 =head2 update_time_entry_by_id
@@ -442,7 +440,7 @@ Delete time entry using a given entry id.
 =cut
 
 sub delete_time_entry_by_id() {
-    my ( $self, $time_entry_id ) = @_;
+    my ( $self, $workspace_id,$time_entry_id ) = @_;
     my $response;
 
     $self->_check_id_is_numeric($time_entry_id);
@@ -451,10 +449,9 @@ sub delete_time_entry_by_id() {
         {
             type => 'DELETE',
             url  =>
-              join( '', ( TOGGL_URL_V9, "time_entries/", "$time_entry_id" ) ),
+              join( '', ( TOGGL_URL_V9, "workspaces/", $workspace_id,"/time_entries/", "$time_entry_id" ) ),
             auth    => { api_token => $self->api_token },
             headers => [],
-            data    => {},
         }
     );
     return 1;
