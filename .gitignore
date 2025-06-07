@@ -59,3 +59,4 @@ Session.vim
 *~
 mutants/*
 .credentials
+examples/testing_tests.pl

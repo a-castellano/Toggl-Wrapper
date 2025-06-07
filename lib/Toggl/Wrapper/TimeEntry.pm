@@ -143,7 +143,7 @@ has 'start' => (
 
 has 'stop_date' => (
     is        => 'ro',
-    isa       => 'DateTime' | 'Undef',
+    isa       => 'DateTime|Undef',
     required  => 0,
     predicate => 'has_stop_date',
 );
@@ -153,6 +153,7 @@ has 'stop' => (
     isa       => 'Str|Undef',
     required  => 0,
     predicate => 'has_stop',
+    writer    => 'set_stop',
 );
 
 has 'duration' => (
