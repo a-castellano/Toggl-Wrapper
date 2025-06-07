@@ -289,7 +289,7 @@ passed entry does not contain 'id' field.";
 
     $self->_check_id_is_numeric($time_entry->id);
 
-    return $self->stop_time_entry_by_id( $time_entry->workspace_id, $time_entry->id );
+    return $self->stop_time_entry_by_id( $time_entry->id,$time_entry->workspace_id );
 
 }
 
@@ -332,7 +332,7 @@ Stop time entries from a given entry id.
 =cut
 
 sub stop_time_entry_by_id() {
-    my ( $self, $workspace_id,$time_entry_id ) = @_;
+    my ( $self,$time_entry_id , $workspace_id) = @_;
     my $response;
 
     $self->_check_id_is_numeric($time_entry_id);
@@ -587,8 +587,6 @@ sub bulk_update_time_entries_tags() {
             croak "Invalid parameters supplied, '$parameter' is empty.";
         }
 
-        $data{$parameter} = $parameters->{$parameter}
-
     }
 
     if ( !exists $parameters->{tag_action} ) {
@@ -604,29 +602,38 @@ sub bulk_update_time_entries_tags() {
 
     $ids = join( ',', @{ $parameters->{time_entry_ids} } );
 
+
+        $data{op} = $parameters->{tag_action};
+        $data{path} = "/tags";
+        $data{value} = $parameters->{tags};
+
     $response = _make_api_call(
         {
-            type => 'PUT',
-            url  => join( '', ( TOGGL_URL_V9, "time_entries/", $ids ) ),
+            type => 'PATCH',
+            url  => join( '', ( TOGGL_URL_V9, "workspaces/",$self->_user_data->{default_workspace_id},"/time_entries/", $ids ) ),
             auth => {
                 api_token => $self->api_token,
             },
             headers => [],
-            data    => { time_entry => encode_json \%data },
+            data    => encode_json [\%data],
         }
     );
 
-    if ( ref( $response->{data} ) eq 'HASH' ) {
-        @response_data = @{ [ $response->{data} ] };
-    }
-    else {
-        @response_data = @{ $response->{data} };
-    }
-
-    map { push( @time_entries, Toggl::Wrapper::TimeEntry->new($_) ) }
-      @response_data;
-    return \@time_entries;
+    return $response;
 }
+
+=head2 default_workspace_id
+Rewturns default workspace ID for the logged user.
+=cut
+
+sub default_workspace_id() {
+    my ( $self ) = @_;
+
+    return $self->_user_data->{default_workspace_id};
+
+}
+
+
 
 =head1 AUTHOR
 
