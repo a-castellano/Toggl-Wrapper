@@ -289,18 +289,7 @@ passed entry does not contain 'id' field.";
 
     $self->_check_id_is_numeric($time_entry->id);
 
-    $response = _make_api_call(
-        {
-            type => 'PATCH',
-            url  => join( '',
-                ( TOGGL_URL_V9, "workspaces/",$time_entry->workspace_id,"/time_entries/", $time_entry->id, "/stop"  )),
-            auth => {
-                api_token => $self->api_token,
-            },
-            headers => [ { 'Content-Type' => 'application/json' } ],
-        }
-    );
-    return Toggl::Wrapper::TimeEntry->new( $response );
+    return $self->stop_time_entry_by_id( $time_entry->workspace_id, $time_entry->id );
 
 }
 
@@ -338,30 +327,29 @@ sub _check_id_is_numeric() {
     }
 }
 
-#=head2 stop_time_entry_by_id
-#Stop time entries from a given entry id.
-#=cut
-#
-#sub stop_time_entry_by_id() {
-#    my ( $self, $time_entry_id ) = @_;
-#    my $response;
-#
-#    $self->_check_id_is_numeric($time_entry_id);
-#
-#    $response = _make_api_call(
-#        {
-#            type => 'PATCH',
-#            url  => join( '',
-#                ( TOGGL_URL_V9, "workspaces/",$time_entry->workspace_id,"/time_entries/", $time_entry_id, "/stop"  ),
-#            auth => {
-#                api_token => $self->api_token,
-#            },
-#            headers => [ { 'Content-Type' => 'application/json' } ],
-#            #            data    => {},
-#        }
-#    );
-#    return Toggl::Wrapper::TimeEntry->new( $response->{data} );
-#}
+=head2 stop_time_entry_by_id
+Stop time entries from a given entry id.
+=cut
+
+sub stop_time_entry_by_id() {
+    my ( $self, $workspace_id,$time_entry_id ) = @_;
+    my $response;
+
+    $self->_check_id_is_numeric($time_entry_id);
+
+    $response = _make_api_call(
+        {
+            type => 'PATCH',
+            url  => join( '',
+                ( TOGGL_URL_V9, "workspaces/",$workspace_id,"/time_entries/", $time_entry_id, "/stop"  )),
+            auth => {
+                api_token => $self->api_token,
+            },
+            headers => [ { 'Content-Type' => 'application/json' } ],
+        }
+    );
+    return Toggl::Wrapper::TimeEntry->new( $response );
+}
 
 =head2 get_running_time_entry
 Get currently running time entry.

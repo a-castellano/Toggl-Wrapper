@@ -37,6 +37,6 @@ my $returned_id = $returned_data->id;
 
 sleep 10;
 
-$tggl->stop_time_entry_by_id( $returned_data->id() );
+$tggl->stop_time_entry( $returned_data );
 
-$tggl->update_time_entry_by_id( $returned_data->id(), {description => "Change description"} );
+$tggl->update_time_entry( $returned_data, {description => "Change description"} );
