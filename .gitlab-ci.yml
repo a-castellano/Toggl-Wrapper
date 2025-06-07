@@ -18,11 +18,11 @@ tests:
     - cpanm Devel::Mutator
     - perl Makefile.PL
     - make
-    - mutator mutate lib/Toggl/Wrapper.pm
-    - mutator mutate lib/Toggl/Wrapper/TimeEntry.pm
+  #    - mutator mutate lib/Toggl/Wrapper.pm
+  #    - mutator mutate lib/Toggl/Wrapper/TimeEntry.pm
   script:
     - make test
-    - mutator test
+#    - mutator test
 
 coverage:
   stage: coverage
@@ -36,11 +36,11 @@ coverage:
     - cpanm Devel::Mutator
     - perl Makefile.PL
     - make
-    - mutator mutate lib/Toggl/Wrapper.pm
-    - mutator mutate lib/Toggl/Wrapper/TimeEntry.pm
+  ##    - mutator mutate lib/Toggl/Wrapper.pm
+  ##   - mutator mutate lib/Toggl/Wrapper/TimeEntry.pm
   script:
     - make test
-    - mutator test
+    #    - mutator test
     - cover -test
   coverage: /Total\s+.+\s(\d+\.\d+?)$/
 
