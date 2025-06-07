@@ -378,7 +378,7 @@ Update time entry using a given entry id.
 =cut
 
 sub update_time_entry_by_id() {
-    my ( $self, $time_entry_id, $update_data ) = @_;
+    my ( $self, $time_entry_id, $workspace_id, $update_data ) = @_;
     my $response;
 
     $self->_check_id_is_numeric($time_entry_id);
@@ -386,16 +386,16 @@ sub update_time_entry_by_id() {
     $response = _make_api_call(
         {
             type => 'PUT',
-            url =>
-              join( '', ( TOGGL_URL_V9, "time_entries/", $time_entry_id ) ),
+            url  => join( '',
+                ( TOGGL_URL_V9, "workspaces/",$workspace_id,"/time_entries/", $time_entry_id  )),
             auth => {
                 api_token => $self->api_token,
             },
             headers => [ { 'Content-Type' => 'application/json' } ],
-            data => { time_entry => encode_json $update_data },
+            data => encode_json $update_data ,
         }
     );
-    return Toggl::Wrapper::TimeEntry->new( $response->{data} );
+    return Toggl::Wrapper::TimeEntry->new( $response );
 }
 
 =head2 update_time_entry
@@ -411,7 +411,7 @@ sub update_time_entry() {
 passed entry does not contain 'id' field.";
     }
 
-    return $self->update_time_entry_by_id( $time_entry->id(), $update_data );
+    return $self->update_time_entry_by_id( $time_entry->id, $time_entry->workspace_id, $update_data );
 }
 
 =head2 delete_time_entry_by_id
