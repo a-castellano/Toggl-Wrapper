@@ -393,70 +393,55 @@ sub update_time_entry : Tests(3) {
       "Cannont update a TimeEntry without id";
 }
 
-###sub delete_time_entry : Tests(3) {
-###    my $test  = shift;
-###    my $class = $test->class_to_test;
-###
-###    my ( $mocked_lwp, $mocked_http_request, $mocked_http_response ) = mock();
-###
-###    my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
-###
-###    my $return_json_example =
-###'{"data":{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-14T12:00:00Z","duration":"-900","description":"Change description"}}';
-###
-###    $mocked_http_response->mock(
-###        "decoded_content",
-###        sub {
-###            return $return_json_example;
-###        }
-###    );
-###
-###    my $time_entry = Toggl::Wrapper::TimeEntry->new(
-###        start_date => DateTime->new(
-###            year      => '2018',
-###            month     => '3',
-###            day       => '8',
-###            hour      => '12',
-###            minute    => '0',
-###            time_zone => 'local'
-###        ),
-###        id           => 34567890,
-###        duration     => 900,
-###        created_with => "TestEntry.pm"
-###    );
-###
-###    ok $wrapper->delete_time_entry($time_entry), "Delete time entry.";
-###    ok $wrapper->delete_time_entry_by_id( $time_entry->id() ),
-###      "Delete time entry by id.";
-###
-###    throws_ok {
-###        $wrapper->delete_time_entry(
-###            Toggl::Wrapper::TimeEntry->new(
-###                start_date => DateTime->new(
-###                    year      => '2018',
-###                    month     => '3',
-###                    day       => '8',
-###                    hour      => '12',
-###                    minute    => '0',
-###                    time_zone => 'local'
-###                ),
-###                stop_date => DateTime->new(
-###                    year      => '2018',
-###                    month     => '3',
-###                    day       => '8',
-###                    hour      => '12',
-###                    minute    => '15',
-###                    time_zone => 'local'
-###                ),
-###
-###                duration     => 900,
-###                created_with => "TestEntry.pm"
-###            )
-###        );
-###    }
-###    qr/entry does not contain 'id' field/,
-###      "Cannont delete a TimeEntry without id";
-###}
+sub delete_time_entry : Tests(3) {
+    my $test  = shift;
+    my $class = $test->class_to_test;
+
+    my ( $mocked_lwp, $mocked_http_request, $mocked_http_response ) = mock();
+
+    my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
+
+    my $return_json_example =
+'{"id":798455036,"workspace_id":1364303,"billable":0,"start":"2018-02-14T12:00:00Z","duration":-900,"description":"Change description"}';
+
+    $mocked_http_response->mock(
+        "decoded_content",
+        sub {
+            return $return_json_example;
+        }
+    );
+
+    my $time_entry = Toggl::Wrapper::TimeEntry->new(
+        start_date => DateTime->new(
+            year      => '2018',
+            month     => '3',
+            day       => '8',
+            hour      => '12',
+            minute    => '0',
+            time_zone => 'local'
+        ),
+        id           => 34567890,
+        duration     => 900,
+        created_with => "TestEntry.pm"
+    );
+
+    ok $wrapper->delete_time_entry($time_entry), "Delete time entry.";
+    ok $wrapper->delete_time_entry_by_id($wrapper->default_workspace_id(), $time_entry->id() ),
+      "Delete time entry by id.";
+
+    throws_ok {
+        $wrapper->delete_time_entry(
+            Toggl::Wrapper::TimeEntry->new(
+                start_date => DateTime->today(),
+                stop_date => DateTime->today()->add(minutes => 15),
+                duration     => 900,
+                created_with => "TestEntry.pm"
+            )
+        );
+    }
+    qr/entry does not contain 'id' field/,
+      "Cannont delete a TimeEntry without id";
+}
 ###
 ###sub get_time_entries : Tests(13) {
 ###    my $test  = shift;

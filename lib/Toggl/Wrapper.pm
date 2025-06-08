@@ -469,7 +469,7 @@ sub delete_time_entry() {
         croak "Error:
 passed entry does not contain 'id' field.";
     }
-    return $self->delete_time_entry_by_id( $time_entry->id() );
+    return $self->delete_time_entry_by_id($self->default_workspace_id(), $time_entry->id() );
 }
 
 =head2 get_time_entries
