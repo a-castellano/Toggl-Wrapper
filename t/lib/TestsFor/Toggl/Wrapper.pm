@@ -248,7 +248,7 @@ sub stop_entry : Tests(4) {
     my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
 
     my $return_json_example =
-'{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-14T12:00:00Z","duration":"-900"}';
+'{"id":"798455036","workspace_id":"1364303","billable":0,"start":"2018-02-14T12:00:00Z","duration":"-900"}';
 
     $mocked_http_response->mock(
         "decoded_content",
@@ -263,7 +263,7 @@ sub stop_entry : Tests(4) {
     $time_entry = $wrapper->start_time_entry();
     ok $wrapper->stop_time_entry_by_id(34567890,1364303), "Stop time entry.";
 
-    throws_ok { $wrapper->stop_time_entry_by_id("imnotanumber") }
+    throws_ok { $wrapper->stop_time_entry_by_id("imnotanumber",111111) }
     qr/TimeEntry id must be a number/,
       "Cannont stop a TimeEntry without a numeric id";
 
@@ -303,7 +303,7 @@ sub get_entry_details : Tests(1) {
     my $json =
 '{"guid":null,"tid":null,"id":"798455036","duronly":false,"pid":null,"tags":null,"duration":"-900","start":"2018-02-14T12:00:00Z","at":null,"created_with":null,"stop":null,"billable":false,"description":"example description","wid":"1364303"}';
 
-    my $time_entry = $wrapper->get_time_entry_details(798455036);
+    my $time_entry = $wrapper->get_time_entry_details(1364303,798455036);
     is_deeply(
         decode_json $time_entry->as_json(),
         decode_json $json,
@@ -340,8 +340,7 @@ sub get_running_time_entry : Tests(1) {
     );
 }
 
-#sub update_time_entry : Tests(3) {
-sub update_time_entry : Tests(1) {
+sub update_time_entry : Tests(3) {
     my $test  = shift;
     my $class = $test->class_to_test;
 
@@ -350,7 +349,7 @@ sub update_time_entry : Tests(1) {
     my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
 
     my $return_json_example =
-'{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-14T12:00:00Z","duration":"-900","description":"Change description"}';
+'{"id":"798455036","workspace_id":"1364303","billable":0,"start":"2018-02-14T12:00:00Z","duration":"-900","description":"Change description"}';
 
     $mocked_http_response->mock(
         "decoded_content",
@@ -371,27 +370,27 @@ sub update_time_entry : Tests(1) {
         "Wrapper is able to get time entries details."
     );
 
-    #    $updated_time_entry = $wrapper->update_time_entry_by_id( 798455036,31212,
-    #        { description => "Change description" } );
-    #    is_deeply(
-    #        decode_json $updated_time_entry->as_json(),
-    #        decode_json $json,
-    #        "Wrapper is able to get time entries details."
-    #    );
-    #
-    #    throws_ok {
-    #        $wrapper->update_time_entry(
-    #            Toggl::Wrapper::TimeEntry->new(
-    #                start_date => DateTime->today(),
-    #                stop_date => DateTime->today()->add(minutes => 15),
-    #                duration     => 900,
-    #                created_with => "TestEntry.pm",
-    #            ),
-    #            { description => "Change Description" },
-    #        );
-    #    }
-    #    qr/entry does not contain 'id' field/,
-    #      "Cannont update a TimeEntry without id";
+    $updated_time_entry = $wrapper->update_time_entry_by_id( 798455036,31212,
+        { description => "Change description" } );
+    is_deeply(
+        decode_json $updated_time_entry->as_json(),
+        decode_json $json,
+        "Wrapper is able to get time entries details."
+    );
+
+    throws_ok {
+        $wrapper->update_time_entry(
+            Toggl::Wrapper::TimeEntry->new(
+                start_date => DateTime->today(),
+                stop_date => DateTime->today()->add(minutes => 15),
+                duration     => 900,
+                created_with => "TestEntry.pm",
+            ),
+            { description => "Change Description" },
+        );
+    }
+    qr/entry does not contain 'id' field/,
+      "Cannont update a TimeEntry without id";
 }
 
 ###sub delete_time_entry : Tests(3) {
