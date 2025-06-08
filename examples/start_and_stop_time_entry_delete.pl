@@ -31,8 +31,17 @@ else {
 
 my $tggl = Toggl::Wrapper->new(%data);
 
-my $returned_data = $tggl->create_time_entry(
-    start_date => DateTime->today()->add( hours => 6 ),
-    duration   => 1000,
-);
+my $started_entry = $tggl->start_time_entry();
 
+my $id = $started_entry->id;
+
+print "Entry id -> $id\n";
+print "Waiting 3 seconds...\n";
+
+sleep 3;
+
+$tggl->stop_time_entry($started_entry);
+
+sleep 3;
+
+$tggl->delete_time_entry($started_entry);

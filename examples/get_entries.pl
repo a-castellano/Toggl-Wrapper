@@ -31,17 +31,13 @@ else {
 
 my $tggl = Toggl::Wrapper->new(%data);
 
-#die Dumper $tggl->get_time_entries();
-my @entries = @{
+my $entries = 
     $tggl->get_time_entries(
         {
             start => DateTime->today(),
             stop  => DateTime->today()->add( days => 1 )
         }
     )
-};
+;
 
-my $arrSize = @entries;
-
-#die $arrSize;
-
+print Dumper $entries;

@@ -35,23 +35,39 @@ my $returned_data = $tggl->start_time_entry();
 
 my $first_id = $returned_data->id;
 
+print(  "First ID: "
+      . $first_id . "\n"
+      . "Waiting 10 seconds before stopping the first entry...\n" );
+
 sleep 10;
 
-$tggl->stop_time_entry_by_id($first_id);
+$tggl->stop_time_entry_by_id( $first_id, $tggl->default_workspace_id() );
 
-$tggl->update_time_entry_by_id( $first_id,
-    { description => "Change description" } );
+print("Updating first entry description .\n");
+
+$tggl->update_time_entry_by_id(
+    $first_id,
+    $tggl->default_workspace_id(),
+    { description => "Change description" }
+);
 
 $returned_data = $tggl->start_time_entry();
 
 my $second_id = $returned_data->id;
-
+print(  "Second ID: "
+      . $second_id . "\n"
+      . "Waiting 10 seconds before stopping the seconds entry...\n" );
 sleep 10;
 
-$tggl->stop_time_entry_by_id($second_id);
+$tggl->stop_time_entry_by_id( $second_id, $tggl->default_workspace_id() );
 
-$tggl->update_time_entry_by_id( $second_id,
-    { description => "Second change description" } );
+print("Updating second entry description .\n");
+
+$tggl->update_time_entry_by_id(
+    $second_id,
+    $tggl->default_workspace_id(),
+    { description => "Second change description" }
+);
 
 $tggl->bulk_update_time_entries_tags(
     {

@@ -36,7 +36,7 @@ my $started_entry = $tggl->start_time_entry();
 my $id = $started_entry->id;
 
 print "Entry id -> $id\n";
-print "Waiting 30 seconds...\n";
+print "Waiting 3 seconds...\n";
 
 sleep 3;
 

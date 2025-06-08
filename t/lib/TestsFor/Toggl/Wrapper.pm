@@ -185,7 +185,7 @@ qr/TimeEntry does not allow to be instanced without 'start_date' or 'start'/,
       "Calling create_time_entry with no start_date attribute should fail.";
 
     my $return_json_example =
-'{"data":{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-13T12:00:00Z","duration":900,"uid":2143391, "tags":[], "duronly":0}}';
+'{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-13T12:00:00Z","duration":900,"uid":2143391, "tags":[], "duronly":0, "description": "Test entry"}';
 
     $mocked_http_response->mock(
         "decoded_content",
@@ -208,7 +208,7 @@ qr/TimeEntry does not allow to be instanced without 'start_date' or 'start'/,
     );
 
     my $json =
-'{"guid":null,"tid":null,"id":"798455036","duronly":false,"pid":null,"tags":[],"duration":"900","start":"2018-02-13T12:00:00Z","at":null,"created_with":null,"stop":null,"billable":false,"description":null,"wid":"1364303"}';
+'{"guid":null,"tid":null,"id":"798455036","duronly":false,"pid":null,"tags":[],"duration":"900","start":"2018-02-13T12:00:00Z","at":null,"created_with":null,"stop":null,"billable":false,"description":"Test entry","wid":"1364303"}';
 
     is_deeply(
         decode_json $returned_data->as_json(),
@@ -227,7 +227,7 @@ sub start_entry : Tests(1) {
     my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
 
     my $return_json_example =
-'{"data":{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-14T12:00:00Z","duration":"-900"}}';
+'{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-14T12:00:00Z","duration":"-900"}';
 
     $mocked_http_response->mock(
         "decoded_content",
@@ -248,7 +248,7 @@ sub stop_entry : Tests(4) {
     my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
 
     my $return_json_example =
-'{"data":{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-14T12:00:00Z","duration":"-900"}}';
+'{"id":"798455036","workspace_id":"1364303","billable":0,"start":"2018-02-14T12:00:00Z","duration":"-900"}';
 
     $mocked_http_response->mock(
         "decoded_content",
@@ -261,32 +261,17 @@ sub stop_entry : Tests(4) {
     ok $wrapper->stop_time_entry($time_entry), "Stop time entry.";
 
     $time_entry = $wrapper->start_time_entry();
-    ok $wrapper->stop_time_entry_by_id(34567890), "Stop time entry.";
+    ok $wrapper->stop_time_entry_by_id(34567890,1364303), "Stop time entry.";
 
-    throws_ok { $wrapper->stop_time_entry_by_id("imnotanumber") }
+    throws_ok { $wrapper->stop_time_entry_by_id("imnotanumber",111111) }
     qr/TimeEntry id must be a number/,
       "Cannont stop a TimeEntry without a numeric id";
 
     throws_ok {
         $wrapper->stop_time_entry(
             Toggl::Wrapper::TimeEntry->new(
-                start_date => DateTime->new(
-                    year      => '2018',
-                    month     => '3',
-                    day       => '8',
-                    hour      => '12',
-                    minute    => '0',
-                    time_zone => 'local'
-                ),
-                stop_date => DateTime->new(
-                    year      => '2018',
-                    month     => '3',
-                    day       => '8',
-                    hour      => '12',
-                    minute    => '15',
-                    time_zone => 'local'
-                ),
-
+                start_date => DateTime->today(),
+                stop_date => DateTime->today()->add(minutes => 15),
                 duration     => 900,
                 created_with => "TestEntry.pm"
             )
@@ -306,7 +291,7 @@ sub get_entry_details : Tests(1) {
     my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
 
     my $return_json_example =
-'{"data":{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-14T12:00:00Z","duration":"-900"}}';
+'{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-14T12:00:00Z","duration":"-900","description": "example description"}';
 
     $mocked_http_response->mock(
         "decoded_content",
@@ -316,9 +301,9 @@ sub get_entry_details : Tests(1) {
     );
 
     my $json =
-'{"guid":null,"tid":null,"id":"798455036","duronly":false,"pid":null,"tags":null,"duration":"-900","start":"2018-02-14T12:00:00Z","at":null,"created_with":null,"stop":null,"billable":false,"description":null,"wid":"1364303"}';
+'{"guid":null,"tid":null,"id":"798455036","duronly":false,"pid":null,"tags":null,"duration":"-900","start":"2018-02-14T12:00:00Z","at":null,"created_with":null,"stop":null,"billable":false,"description":"example description","wid":"1364303"}';
 
-    my $time_entry = $wrapper->get_time_entry_details(798455036);
+    my $time_entry = $wrapper->get_time_entry_details(1364303,798455036);
     is_deeply(
         decode_json $time_entry->as_json(),
         decode_json $json,
@@ -335,7 +320,7 @@ sub get_running_time_entry : Tests(1) {
     my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
 
     my $return_json_example =
-'{"data":{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-14T12:00:00Z","duration":"-900"}}';
+'{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-14T12:00:00Z","duration":"-900","description":"example description"}';
 
     $mocked_http_response->mock(
         "decoded_content",
@@ -345,7 +330,7 @@ sub get_running_time_entry : Tests(1) {
     );
 
     my $json =
-'{"guid":null,"tid":null,"id":"798455036","duronly":false,"pid":null,"tags":null,"duration":"-900","start":"2018-02-14T12:00:00Z","at":null,"created_with":null,"stop":null,"billable":false,"description":null,"wid":"1364303"}';
+'{"guid":null,"tid":null,"id":"798455036","duronly":false,"pid":null,"tags":null,"duration":"-900","start":"2018-02-14T12:00:00Z","at":null,"created_with":null,"stop":null,"billable":false,"description":"example description","wid":"1364303"}';
 
     my $time_entry = $wrapper->get_running_time_entry();
     is_deeply(
@@ -364,7 +349,7 @@ sub update_time_entry : Tests(3) {
     my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
 
     my $return_json_example =
-'{"data":{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-14T12:00:00Z","duration":"-900","description":"Change description"}}';
+'{"id":"798455036","workspace_id":"1364303","billable":0,"start":"2018-02-14T12:00:00Z","duration":"-900","description":"Change description"}';
 
     $mocked_http_response->mock(
         "decoded_content",
@@ -376,7 +361,7 @@ sub update_time_entry : Tests(3) {
     my $json =
 '{"guid":null,"tid":null,"id":"798455036","duronly":false,"pid":null,"tags":null,"duration":"-900","start":"2018-02-14T12:00:00Z","at":null,"created_with":null,"stop":null,"billable":false,"description":"Change description","wid":"1364303"}';
 
-    my $time_entry         = $wrapper->get_running_time_entry();
+   my $time_entry         = $wrapper->get_running_time_entry();
     my $updated_time_entry = $wrapper->update_time_entry( $time_entry,
         { description => "Change description" } );
     is_deeply(
@@ -385,7 +370,7 @@ sub update_time_entry : Tests(3) {
         "Wrapper is able to get time entries details."
     );
 
-    $updated_time_entry = $wrapper->update_time_entry_by_id( 798455036,
+    $updated_time_entry = $wrapper->update_time_entry_by_id( 798455036,31212,
         { description => "Change description" } );
     is_deeply(
         decode_json $updated_time_entry->as_json(),
@@ -396,25 +381,10 @@ sub update_time_entry : Tests(3) {
     throws_ok {
         $wrapper->update_time_entry(
             Toggl::Wrapper::TimeEntry->new(
-                start_date => DateTime->new(
-                    year      => '2018',
-                    month     => '3',
-                    day       => '8',
-                    hour      => '12',
-                    minute    => '0',
-                    time_zone => 'local'
-                ),
-                stop_date => DateTime->new(
-                    year      => '2018',
-                    month     => '3',
-                    day       => '8',
-                    hour      => '12',
-                    minute    => '15',
-                    time_zone => 'local'
-                ),
-
+                start_date => DateTime->today(),
+                stop_date => DateTime->today()->add(minutes => 15),
                 duration     => 900,
-                created_with => "TestEntry.pm"
+                created_with => "TestEntry.pm",
             ),
             { description => "Change Description" },
         );
@@ -432,7 +402,7 @@ sub delete_time_entry : Tests(3) {
     my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
 
     my $return_json_example =
-'{"data":{"id":"798455036","wid":"1364303","billable":0,"start":"2018-02-14T12:00:00Z","duration":"-900","description":"Change description"}}';
+'{"id":798455036,"workspace_id":1364303,"billable":0,"start":"2018-02-14T12:00:00Z","duration":-900,"description":"Change description"}';
 
     $mocked_http_response->mock(
         "decoded_content",
@@ -456,29 +426,14 @@ sub delete_time_entry : Tests(3) {
     );
 
     ok $wrapper->delete_time_entry($time_entry), "Delete time entry.";
-    ok $wrapper->delete_time_entry_by_id( $time_entry->id() ),
+    ok $wrapper->delete_time_entry_by_id($wrapper->default_workspace_id(), $time_entry->id() ),
       "Delete time entry by id.";
 
     throws_ok {
         $wrapper->delete_time_entry(
             Toggl::Wrapper::TimeEntry->new(
-                start_date => DateTime->new(
-                    year      => '2018',
-                    month     => '3',
-                    day       => '8',
-                    hour      => '12',
-                    minute    => '0',
-                    time_zone => 'local'
-                ),
-                stop_date => DateTime->new(
-                    year      => '2018',
-                    month     => '3',
-                    day       => '8',
-                    hour      => '12',
-                    minute    => '15',
-                    time_zone => 'local'
-                ),
-
+                start_date => DateTime->today(),
+                stop_date => DateTime->today()->add(minutes => 15),
                 duration     => 900,
                 created_with => "TestEntry.pm"
             )
@@ -499,7 +454,7 @@ sub get_time_entries : Tests(13) {
     my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
 
     my $return_json_example =
-'[{"id":"798455036","wid":"1364303","billable":0,"start":"2018-03-08T12:00:00Z","duration":"900","description":"Doing something","created_with":"TestEntry.pm"},{"id":"798455037","wid":"1364303","billable":0,"start":"2018-03-08T14:00:00Z","duration":"900","description":"Doing something more","created_with":"TestEntry.pm"}]';
+'[{"id":"798455036","workspace_id":1364303,"billable":0,"start":"2018-03-08T12:00:00Z","duration":"900","description":"Doing something","created_with":"TestEntry.pm"},{"id":"798455037","workspace_id":1364303,"billable":0,"start":"2018-03-08T14:00:00Z","duration":"900","description":"Doing something more","created_with":"TestEntry.pm"}]';
 
     $mocked_http_response->mock(
         "decoded_content",
@@ -509,7 +464,7 @@ sub get_time_entries : Tests(13) {
     );
 
     my $json =
-'{"guid":null,"tid":null,"id":"798455036","duronly":false,"pid":null,"tags":null,"duration":"-900","start":"2018-02-14T12:00:00Z","at":null,"created_with":null,"stop":null,"billable":false,"description":"Change description","wid":"1364303"}';
+'{"guid":null,"tid":null,"id":"798455036","duronly":false,"pid":null,"tags":null,"duration":"-900","start":"2018-02-14T12:00:00Z","at":null,"created_with":null,"stop":null,"billable":false,"description":"Change description","wid":1364303}';
 
     throws_ok {
         $wrapper->get_time_entries('purenoise');
@@ -643,7 +598,7 @@ qr/Invalid parameters supplied, stop date cannot be eairlier than start date/,
         Toggl::Wrapper::TimeEntry->new(
             start        => '2018-03-08T12:00:00Z',
             id           => 798455036,
-            wid          => 1364303,
+            workspace_id         => 1364303,
             duration     => 900,
             description  => "Doing something",
             created_with => "TestEntry.pm",
@@ -651,16 +606,16 @@ qr/Invalid parameters supplied, stop date cannot be eairlier than start date/,
         Toggl::Wrapper::TimeEntry->new(
             start        => '2018-03-08T14:00:00Z',
             id           => 798455037,
-            wid          => 1364303,
+            workspace_id          => 1364303,
             duration     => 900,
             description  => "Doing something more",
             created_with => "TestEntry.pm",
         )
     );
 
-    is_deeply( $wrapper->get_time_entries(),
-        \@expected_array, "Wrapper is able to get time entries details." );
-
+        is_deeply( $wrapper->get_time_entries(),
+            \@expected_array, "Wrapper is able to get time entries details." );
+    
     is_deeply(
         $wrapper->get_time_entries(
             {
@@ -710,7 +665,7 @@ sub bulk_update_time_entries_tags : Tests(14) {
     my $wrapper = $class->new( api_token => 'u1tra53cr3tt0k3n' );
 
     my $return_json_example =
-'{"data":[{"id":"798455036","wid":"1364303","billable":0,"start":"2018-03-08T12:00:00Z","duration":"900","description":"Doing something","created_with":"TestEntry.pm","tags":["tagtest1", "some", "tags"]},{"id":"798455037","wid":"1364303","billable":0,"start":"2018-03-08T14:00:00Z","duration":"900","description":"Doing something more","created_with":"TestEntry.pm","tags":["tagtest2", "some", "tags"]}]}';
+'[{"id":"798455036","wid":1364303,"billable":0,"start":"2018-03-08T12:00:00Z","duration":"900","description":"Doing something","created_with":"TestEntry.pm","tags":["tagtest1", "some", "tags"],"duronly":0},{"id":"798455037","wid":1364303,"billable":0,"start":"2018-03-08T14:00:00Z","duration":"900","description":"Doing something more","created_with":"TestEntry.pm","tags":["tagtest2", "some", "tags"], "duronly":0}]';
 
     $mocked_http_response->mock(
         "decoded_content",
@@ -876,7 +831,7 @@ qr/Invalid parameters supplied, 'tag_action' must be a string containing 'add' o
     );
 
     $return_json_example =
-'{"data":[{"id":"798455036","wid":"1364303","billable":0,"start":"2018-03-08T12:00:00Z","duration":"900","description":"Doing something","created_with":"TestEntry.pm","tags":["tagtest1"]},{"id":"798455037","wid":"1364303","billable":0,"start":"2018-03-08T14:00:00Z","duration":"900","description":"Doing something more","created_with":"TestEntry.pm","tags":["tagtest2"]}]}';
+'[{"id":"798455036","wid":1364303,"billable":0,"start":"2018-03-08T12:00:00Z","duration":"900","description":"Doing something","created_with":"TestEntry.pm","tags":["tagtest1"],"duronly":0},{"id":"798455037","wid":1364303,"billable":0,"start":"2018-03-08T14:00:00Z","duration":"900","description":"Doing something more","created_with":"TestEntry.pm","tags":["tagtest2"],"duronly":0}]';
 
     $mocked_http_response->mock(
         "decoded_content",
@@ -960,7 +915,7 @@ sub mock {
         "decoded_content",
         sub {
             return
-'{"since":1517980319,"data":{"id":921391,"api_token":"u1tra53cr3tt0k3n","default_wid":1864303,"email":"myemail@domain.com","fullname":"Wrapper Test User","jquery_timeofday_format":"h:i A","jquery_date_format":"m/d/Y","timeofday_format":"h:mm A","date_format":"MM/DD/YYYY","store_start_and_stop_time":true,"beginning_of_week":1,"language":"en_US","image_url":"https://assets.toggl.com/images/profile.png","sidebar_piechart":true,"at":"2018-02-06T05:14:02+00:00","created_at":"2013-03-06T18:14:24+00:00","retention":9,"record_timeline":false,"render_timeline":false,"timeline_enabled":false,"timeline_experiment":false,"new_blog_post":{"title":"Notes on Yesterday’s Server Problems","url":"http://blog.toggl.com/notes-on-yesterdays-server-problems/","category":"Announcement","pub_date":"2018-01-17T13:44:50Z"},"should_upgrade":true,"achievements_enabled":true,"timezone":"Europe/Madrid","openid_enabled":true,"openid_email":"myemail@domain.com","send_product_emails":true,"send_weekly_report":true,"send_timer_notifications":true,"last_blog_entry":"","invitation":{},"workspaces":[{"id":1364303,"name":"User\'s workspace","profile":0,"premium":false,"admin":true,"default_hourly_rate":0,"default_currency":"USD","only_admins_may_create_projects":false,"only_admins_see_billable_rates":false,"only_admins_see_team_dashboard":false,"projects_billable_by_default":true,"rounding":1,"rounding_minutes":0,"api_token":"u1tra53cr3tt0k3n","at":"2013-03-06T18:14:25+00:00","ical_enabled":true}],"duration_format":"improved","obm":{"included":false,"nr":0,"actions":"tree"}}}';
+'{"id":921391,"api_token":"u1tra53cr3tt0k3n","default_workspace_id":1864303,"email":"myemail@domain.com","fullname":"Wrapper Test User","jquery_timeofday_format":"h:i A","jquery_date_format":"m/d/Y","timeofday_format":"h:mm A","date_format":"MM/DD/YYYY","store_start_and_stop_time":true,"beginning_of_week":1,"language":"en_US","image_url":"https://assets.toggl.com/images/profile.png","sidebar_piechart":true,"at":"2018-02-06T05:14:02+00:00","created_at":"2013-03-06T18:14:24+00:00","retention":9,"record_timeline":false,"render_timeline":false,"timeline_enabled":false,"timeline_experiment":false,"new_blog_post":{"title":"Notes on Yesterday’s Server Problems","url":"http://blog.toggl.com/notes-on-yesterdays-server-problems/","category":"Announcement","pub_date":"2018-01-17T13:44:50Z"},"should_upgrade":true,"achievements_enabled":true,"timezone":"Europe/Madrid","openid_enabled":true,"openid_email":"myemail@domain.com","send_product_emails":true,"send_weekly_report":true,"send_timer_notifications":true,"last_blog_entry":"","invitation":{},"workspaces":[{"id":1364303,"name":"User\'s workspace","profile":0,"premium":false,"admin":true,"default_hourly_rate":0,"default_currency":"USD","only_admins_may_create_projects":false,"only_admins_see_billable_rates":false,"only_admins_see_team_dashboard":false,"projects_billable_by_default":true,"rounding":1,"rounding_minutes":0,"api_token":"u1tra53cr3tt0k3n","at":"2013-03-06T18:14:25+00:00","ical_enabled":true}],"duration_format":"improved","obm":{"included":false,"nr":0,"actions":"tree"}}';
         }
     );
 

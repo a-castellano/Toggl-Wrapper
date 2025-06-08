@@ -21,7 +21,7 @@ use DateTime::Format::ISO8601;
 use Try::Tiny;
 use Carp qw(croak);
 
-use Utils::Common qw(check_iso8601);
+use Utils::Common qw(check_iso8601 getdatestring);
 with "Utils::Role::Serializable::JSON";
 use namespace::autoclean;
 
@@ -45,7 +45,8 @@ This module manages Toggl time entries.
 =head1 Properties
 
 description: (string, strongly suggested to be used)
-wid: workspace ID (integer, required if pid or tid not supplied)
+workspace_id: workspace ID (integer, required if pid or tid not supplied)
+wid: alias for workspace_id
 pid: project ID (integer, not required)
 tid: task ID (integer, not required)
 billable: (boolean, not required, default false, available for pro workspaces)
@@ -55,7 +56,18 @@ duration: time entry duration in seconds. If the time entry is currently running
 created_with: the name of your client app (string, required)
 tags: a list of tag names (array of strings, not required)
 duronly: should Toggl show the start and stop time of this time entry? (boolean, not required)
-at: timestamp that is sent in the response, indicates the time item was last updatedead1 SUBROUTINES/METHODS
+at: timestamp that is sent in the response, indicates the time item was last updated
+id: unique time entry ID (integer, not required)
+guid: globally unique identifier for the time entry (string, not required)
+start_date: time entry start time as DateTime object (DateTime, not required)
+stop_date: time entry stop time as DateTime object (DateTime, not required)
+project_id: project ID (integer or undef, not required)
+server_deleted_at: deletion timestamp from server (string or undef, not required)
+tag_ids: list of tag IDs (arrayref or undef, not required)
+task_id: task ID (integer or undef, not required)
+user_id: user ID (integer or undef, not required)
+uid: user ID (integer, not required)
+
 =cut
 
 has 'id' => (
@@ -75,13 +87,23 @@ has 'guid' => (
 has 'description' => (
     is       => 'ro',
     isa      => 'Str',
+    default  => "",
     required => 0,
+);
+
+has 'workspace_id' => (
+    is        => 'ro',
+    isa       => 'Int',
+    required  => 0,
+    predicate => 'has_workspace_id',
+    writer    => 'set_workspace_id',
 );
 
 has 'wid' => (
     is       => 'ro',
     isa      => 'Int',
     required => 0,
+    writer   => 'set_wid',
 );
 
 has 'pid' => (
@@ -121,26 +143,57 @@ has 'start' => (
 
 has 'stop_date' => (
     is        => 'ro',
-    isa       => 'DateTime',
+    isa       => 'DateTime|Undef',
     required  => 0,
     predicate => 'has_stop_date',
 );
 
 has 'stop' => (
     is        => 'ro',
-    isa       => 'Str',
+    isa       => 'Str|Undef',
     required  => 0,
-    writer    => 'set_stop',
     predicate => 'has_stop',
+    writer    => 'set_stop',
 );
 
 has 'duration' => (
-    is       => 'ro',
-    isa      => 'Int',
-    required => 1,
+    is        => 'ro',
+    isa       => 'Int',
+    required  => 1,
+    writer    => 'set_duration',
+    predicate => 'has_duration',
+
 );
 
-# Toggl API requires this attribute. It is up to wrappers to set it.
+has 'project_id' => (
+    is       => 'ro',
+    isa      => 'Int|Undef',
+    required => 0,
+);
+
+has 'server_deleted_at' => (
+    is       => 'ro',
+    isa      => 'Str|Undef',
+    required => 0,
+);
+
+has 'tag_ids' => (
+    is       => 'ro',
+    isa      => 'ArrayRef|Undef',
+    required => 0,
+);
+
+has 'task_id' => (
+    is       => 'ro',
+    isa      => 'Int|Undef',
+    required => 0,
+);
+
+has 'user_id' => (
+    is       => 'ro',
+    isa      => 'Int|Undef',
+    required => 0,
+);
 
 has 'created_with' => (
     is       => 'ro',
@@ -150,7 +203,7 @@ has 'created_with' => (
 
 has 'tags' => (
     is       => 'ro',
-    isa      => 'ArrayRef',
+    isa      => 'ArrayRef|Undef',
     required => 0,
 );
 
@@ -186,6 +239,11 @@ data. It also converts data to ISO 8601 format.
 sub BUILD {
     my $self = shift;
 
+    if ( $self->has_workspace_id ) {
+        $self->set_workspace_id( int( $self->workspace_id ) );
+        $self->set_wid( $self->workspace_id );
+    }
+
     if ( $self->has_start_date && $self->has_start ) {
         croak
 "TimeEntry does not allow to be instanced with 'start_date' and 'start' at the same time. Only one of them is allowed.";
@@ -202,34 +260,40 @@ sub BUILD {
     }
 
     if ( $self->has_start_date ) {
-        $self->set_start( $self->start_date->iso8601() . 'Z' );
+
+        $self->set_start( getdatestring( $self->start_date ) );
     }
     else {
         if ( !check_iso8601( $self->start ) ) {
             croak "Attibute 'start' format is not valid.";
         }
+        $self->set_start( $self->start );
     }
 
     if ( $self->has_stop_date ) {
-        $self->set_stop( $self->stop_date->iso8601() . 'Z' );
+        $self->set_stop( $self->stop_date->strftime('%Y-%m-%dT%H:%M:%S%z') );
     }
     elsif ( $self->has_stop ) {
-        if ( !check_iso8601( $self->stop ) ) {
-            croak "Attibute 'stop' format is not valid.";
+        if ( $self->stop ) {
+            if ( !check_iso8601( $self->stop ) ) {
+                croak "Attibute 'stop' format is not valid.";
+            }
         }
     }
 
     if ( $self->has_stop ) {
-        if (
-            DateTime->compare(
-                DateTime::Format::ISO8601->parse_datetime( $self->start ),
-                DateTime::Format::ISO8601->parse_datetime( $self->stop )
-            ) > 0
-          )
-        {
-            croak "End date has to be greater than start date.";
-        }
+        if ( $self->stop ) {
+            if (
+                DateTime->compare(
+                    DateTime::Format::ISO8601->parse_datetime( $self->start ),
+                    DateTime::Format::ISO8601->parse_datetime( $self->stop )
+                ) > 0
+              )
+            {
+                croak "End date has to be greater than start date.";
+            }
 
+        }
     }
 
 }
@@ -242,6 +306,8 @@ Returns json serialiable atributes.
 
 sub serializable_attributes {
     return
+
+#qw(id guid description workspace_id pid tid billable start stop duration created_with tags duronly at );
       qw(id guid description wid pid tid billable start stop duration created_with tags duronly at );
 }
 
@@ -325,7 +391,7 @@ your Modified Version complies with the requirements of this license.
 This license does not grant you the right to use any trademark, service
 mark, tradename, or logo of the Copyright Holder.
 
-This license includes the non-exclusive, worldwide, free-of-charge
+This license includes the non-exclusive, worldworkspace_ide, free-of-charge
 patent license to make, have made, use, offer to sell, sell, import and
 otherwise transfer the Package with respect to any patent claims
 licensable by the Copyright Holder that are necessarily infringed by

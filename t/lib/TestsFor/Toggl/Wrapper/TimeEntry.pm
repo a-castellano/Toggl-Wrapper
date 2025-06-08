@@ -49,22 +49,8 @@ sub constructor : Tests(14) {
 
     throws_ok {
         $class->new(
-            start_date => DateTime->new(
-                year      => '2018',
-                month     => '3',
-                day       => '8',
-                hour      => '12',
-                minute    => '0',
-                time_zone => 'local',
-            ),
-            stop_date => DateTime->new(
-                year      => '2018',
-                month     => '3',
-                day       => '8',
-                hour      => '10',
-                minute    => '0',
-                time_zone => 'local',
-            ),
+            start_date => DateTime->today()->add( hours => 6 ),
+            stop_date => DateTime->today(),
             duration     => 900,
             created_with => "TestEntry.pm",
         );
@@ -73,23 +59,8 @@ sub constructor : Tests(14) {
       "Creating a $class with start date older than stop date should fail.";
 
     ok $class->new(
-        start_date => DateTime->new(
-            year      => '2018',
-            month     => '3',
-            day       => '8',
-            hour      => '12',
-            minute    => '0',
-            time_zone => 'local'
-        ),
-        stop_date => DateTime->new(
-            year      => '2018',
-            month     => '3',
-            day       => '8',
-            hour      => '12',
-            minute    => '15',
-            time_zone => 'local'
-        ),
-
+            start_date => DateTime->today(),
+            stop_date => DateTime->today()->add( hours => 6 ),
         duration     => 900,
         created_with => "TestEntry.pm"
       ),
@@ -208,28 +179,13 @@ qr/does not allow to be instanced with 'stop_date' and 'stop' at the same time. 
       "There is not posibe instance to TimeEntry with invalid stop date.";
 
     my $entry = $class->new(
-        start_date => DateTime->new(
-            year      => '2018',
-            month     => '3',
-            day       => '8',
-            hour      => '12',
-            minute    => '0',
-            time_zone => 'local'
-        ),
-        stop_date => DateTime->new(
-            year      => '2018',
-            month     => '3',
-            day       => '8',
-            hour      => '12',
-            minute    => '15',
-            time_zone => 'local'
-        ),
-
-        duration     => 900,
+        start_date => DateTime->today(),
+        stop_date => DateTime->today()->add( minutes => 6 ),
+        duration     => 360,
         created_with => "TestEntry.pm"
     );
 
-    ok $entry->as_json();
+        ok $entry->as_json();
 
     $entry = $class->new(
         start_date => DateTime->new(
@@ -240,14 +196,7 @@ qr/does not allow to be instanced with 'stop_date' and 'stop' at the same time. 
             minute    => '0',
             time_zone => 'local'
         ),
-        stop_date => DateTime->new(
-            year      => '2018',
-            month     => '3',
-            day       => '8',
-            hour      => '12',
-            minute    => '15',
-            time_zone => 'local'
-        ),
+        stop_date => DateTime->today(),
         duronly      => 1,
         duration     => 900,
         created_with => "TestEntry.pm"

@@ -65,14 +65,7 @@ for my $entry (@entries) {
 my $time_entry = $wrapper->create_time_entry(
     duration    => 900,
     description => "Test entry",
-    start_date  => DateTime->new(
-        year      => '2018',
-        month     => '2',
-        day       => '13',
-        hour      => '18',
-        minute    => '0',
-        time_zone => 'local',
-    ),
+    start_date  => DateTime->today(),
 );
 
 is( $time_entry->duration, 900, "Time entry is created, duration" );
@@ -95,7 +88,7 @@ is(
 ok $wrapper->delete_time_entry($time_entry), qr/Delete created time entry./;
 
 # Start time entry
-#
+
 $time_entry = $wrapper->start_time_entry( description => "Started test entry" );
 
 is(
@@ -180,9 +173,9 @@ $first  = $wrapper->get_time_entry_details( $first->id );
 $second = $wrapper->get_time_entry_details( $second->id );
 $third  = $wrapper->get_time_entry_details( $third->id );
 
-is_deeply( $first->tags, ["tags"], "First has only tags" );
+is_deeply( $first->tags, [ "some" ], "First has only tags" );
 
-is_deeply( $second->tags, ["tags"], "Second has only tags" );
+is_deeply( $second->tags, [ "some" ], "Second has only tags" );
 
 is_deeply( $third->tags, [ "some", "tags" ], "Third still has some tags" );
 
