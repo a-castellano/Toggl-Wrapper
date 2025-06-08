@@ -174,9 +174,15 @@ sub _make_api_call {
     }
     my $response = $wrapper->request($request);
     if ( $response->is_success ) {
-        $response = $response->decoded_content;
-        my $json = parse_json($response);
-        return $json;
+            $response = $response->decoded_content;
+            if ($response){
+
+            my $json = parse_json($response);
+            return $json;
+
+          } else {
+            return {};
+          }
     }
     else {
         my $r       = HTTP::Response->parse( $response->status_line );
