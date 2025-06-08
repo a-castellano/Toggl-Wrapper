@@ -552,9 +552,12 @@ sub get_time_entries() {
         }
     );
 
-    map { push( @time_entries, Toggl::Wrapper::TimeEntry->new($_) ) }
-      @{$response};
-    return @time_entries;
+    for my $entry (@{$response}) {
+      my $time_entry = Toggl::Wrapper::TimeEntry->new($entry);
+      push( @time_entries, $time_entry );
+}
+
+    return \@time_entries;
 }
 
 =head2 bulk_update_time_entries_tags
